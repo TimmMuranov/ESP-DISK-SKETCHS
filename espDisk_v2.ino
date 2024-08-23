@@ -62,10 +62,18 @@ void buildNameList() {
   }
 
   textNameMenue += "<script>";
-  while(butNumber){
-    butNumber--;
-    textNameMenue += "
-  }
+
+  textNameMenue +=
+  "function sendButtonText(button) {"
+  "var xhr = new XMLHttpRequest();xhr.onreadystatechange = function() {"
+  "if (xhr.readyState === 4 && xhr.status === 200) {"
+  "console.log(\"Ответ получен: \", xhr.responseText);}};"
+  "xhr.open(\"POST\", \"/load\", true);"
+  "xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");"
+  "xhr.send(\"buttonText=\" + button.textContent);}"
+  "document.querySelectorAll('.butStyle').forEach(button => {"
+  "button.addEventListener('click', function() {sendButtonText(this);});});";
+    
   textNameMenue += "</script>";
 
   textNameMenue += "</body></html>"; //закрываем форму
@@ -73,6 +81,15 @@ void buildNameList() {
   Serial.println("the final document is" + textNameMenue);
   
    server.send(200, "text/html", textNameMenue);
+}
+
+void openFile() {
+    String buttonText = server.arg("buttonText");
+    Serial.println("button " + buttonText);
+
+   //чтение документа с одноименным именем и отправка его на сторону клиента
+    
+    server.send(200, "text/html", "Not work...");
 }
 
 void setup() {
@@ -96,6 +113,7 @@ void setup() {
 
     // Регистрация обработчика корневого пути
     server.on("/", buildNameList);
+    server.on("/load", openFile);
 
     server.begin();
     Serial.println("Access Point started");
