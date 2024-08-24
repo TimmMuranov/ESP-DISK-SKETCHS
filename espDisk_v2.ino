@@ -13,6 +13,7 @@ File root;
 ESP8266WebServer server(80);
 
 String nameList = "";
+String butText = "";
 
 void buildNameList() {
     while (true) {
@@ -34,7 +35,7 @@ void buildNameList() {
   "<style>.butStyle {width: 50%;}</style>";//создаем заголовок html файла
   
   String fileName = "";
-  byte butNumber = 0;
+  int butNumber = 0;
   
   if(nameList){
     fileName = "";
@@ -70,7 +71,8 @@ void buildNameList() {
   "console.log(\"Ответ получен: \", xhr.responseText);}};"
   "xhr.open(\"POST\", \"/load\", true);"
   "xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");"
-  "xhr.send(\"buttonText=\" + button.textContent);}"
+  "xhr.send(\"buttonText=\" + button.textContent);"
+  "window.location.href = '/textWin';}"
   "document.querySelectorAll('.butStyle').forEach(button => {"
   "button.addEventListener('click', function() {sendButtonText(this);});});";
     
@@ -83,13 +85,28 @@ void buildNameList() {
    server.send(200, "text/html", textNameMenue);
 }
 
-void openFile() {
-    String buttonText = server.arg("buttonText");
-    Serial.println("button " + buttonText);
+void catchFile() {
+
+    butText = server.arg("buttonText");
+    Serial.println("opened: " + butText);
+}
+
+void openTextWindow(){
+  String textWindow =  
+  "<!DOCTYPE html><html><head><title>Title</title>" 
+  "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head>" 
+  "<body>"
+  "<style>.butStyle {width: 100%;}</style>";
+
+  textWindow += "open window with: " + butText;
 
    //чтение документа с одноименным именем и отправка его на сторону клиента
+
+    textWindow += "<button class='butStyle' onclick=\"location.href='/'\">Back to home</button>";
+    textWindow += "<script></script>";
+    textWindow += "</body></html>";
     
-    server.send(200, "text/html", "Not work...");
+    server.send(200, "text/html", textWindow);
 }
 
 void setup() {
@@ -113,7 +130,8 @@ void setup() {
 
     // Регистрация обработчика корневого пути
     server.on("/", buildNameList);
-    server.on("/load", openFile);
+    server.on("/load", catchFile);
+    server.on("/textWin", openTextWindow);
 
     server.begin();
     Serial.println("Access Point started");
