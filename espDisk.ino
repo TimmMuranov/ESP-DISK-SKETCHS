@@ -3,13 +3,11 @@
 #include <ESP8266WebServer.h>
 #include <SPI.h>
 #include <SD.h>
-//=================================================================
+
 File root;
 const char *ssid = "TimsServer"; // Имя вашей Wi-Fi сети
 const char *password = "12345678"; // Пароль от вашей Wi-Fi сети
 ESP8266WebServer server(80);
-
-//=================================================================
 
 String fileNameToOpen = "";
 String fileDataToOpen = "";
@@ -19,7 +17,7 @@ String printDirectory(File dir, int numTabs) {
     String result = "";
     while (true) {
         File entry = dir.openNextFile();
-        if (!entry) break; // Если файлов больше нет, то прекращаем выполнение функции
+        if (!entry) break;
         for (uint8_t i = 0; i < numTabs; i++) {
             result += '\t';
         }
@@ -27,19 +25,14 @@ String printDirectory(File dir, int numTabs) {
         if (entry.isDirectory()) {
             result += "/";
             result += printDirectory(entry, numTabs + 1);
-        } else {
-            //result += "\t\t";
-           // result += "(0D" + String(entry.size(), DEC) + ")"; 
-        } // отображение размера не работает
+        }
         result += "<p>";
         entry.close();
     }
     return result;
 }
-
 void handleRoot()
 {   
-
     if (server.hasArg("open"))
     {
       server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body> Loading the text... <script>location.href='/?write=1';</script></body></html>");
@@ -52,7 +45,6 @@ void handleRoot()
     }
     else if (server.hasArg("listDocuments"))
     {
-        // Обработка кнопки "Список документов"
         server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><button onclick=\"location.href='/'\">Back to home</button><p>" + printDirectory(root, 0) + "</body></html>");
     digitalWrite(2, HIGH);
     Serial.println("запись запущена");
@@ -68,7 +60,6 @@ void handleRoot()
     digitalWrite(2, HIGH);
     }
 }
-
 void handleSave() {
     if (server.method() == HTTP_POST) {
         String json = server.arg("plain");
@@ -78,17 +69,13 @@ void handleSave() {
         String textName = doc["name"];
         String textData = doc["data"];
 
-        // Удаление существующего файла с таким же именем
         if (SD.exists(textName)) {
             SD.remove(textName);
         }
 
-        // Создание файла в корневом каталоге
         File myFile = SD.open(textName, FILE_WRITE);
         if (myFile) {
-            // Запись содержимого в файл
             myFile.println(textData);
-            // Закрытие файла
             myFile.close();
             Serial.println("File created successfully!");
         } else {
@@ -127,12 +114,9 @@ void handleOpen() {
 
 
 void handleDelete() {
-    // Получаем тело запроса
     String json = server.arg("plain");
-
     DynamicJsonDocument doc(1024);
     deserializeJson(doc, json);
-
     String fileName = doc["fileName"];
     SD.remove(fileName);
     Serial.println("file deleted: " + fileName);
@@ -140,30 +124,25 @@ void handleDelete() {
 
 void setup() {
     Serial.begin(9600);
-//=============================================================
-while(!Serial){} // Ждём инициализации работы с шиной UART
+while(!Serial){}
   Serial.print("Initializing SD card...");
   if(!SD.begin(4)){Serial.println("initialization failed!"); return;}
   Serial.println("initialization done.");
   root = SD.open("/");
   printDirectory(root, 0);
   Serial.println("done!");
-//=============================================================
 
-    WiFi.mode(WIFI_AP); // Установка режима точки доступа
-    WiFi.softAP(ssid, password); // Создание точки доступа с указанным именем и паролем
-    
-    IPAddress ip(192, 168, 1, 1); // IP-адрес точки доступа
-    IPAddress gateway(192, 168, 1, 1); // Шлюз по умолчанию
-    IPAddress subnet(255, 255, 255, 0); // Маска подсети
-    WiFi.softAPConfig(ip, gateway, subnet); // Настройка параметров точки доступа
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(ssid, password);
+    IPAddress ip(192, 168, 1, 1);
+    IPAddress gateway(192, 168, 1, 1); 
+    IPAddress subnet(255, 255, 255, 0);
+    WiFi.softAPConfig(ip, gateway, subnet);
 
-    // Регистрация обработчика корневого пути
     server.on("/", handleRoot);
     server.on("/save", HTTP_POST, handleSave);
     server.on("/delete", HTTP_POST, handleDelete);
     server.on("/open", HTTP_POST, handleOpen);
-    
     server.begin();
     Serial.println("Access Point started");
 
