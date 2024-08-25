@@ -80,7 +80,9 @@ void buildNameList() {
     Serial.println("no files");
   }
 
-  textNameMenue += "<div class=\"btn\" ><a href=\"/textWin\" class=\"btn\" id='creatButton'>Creat</a></div>";
+  textNameMenue += "<div class=\"btn\" ><a href=\"/textWin\" class=\"btn\" id='creatButton'>Creat file</a></div><p>";
+
+textNameMenue += "<div class=\"btn\" ><a href=\"/\" class=\"btn\" id='creatButton'>Creat directory</a></div>";
 
   textNameMenue += "<script>";
 
