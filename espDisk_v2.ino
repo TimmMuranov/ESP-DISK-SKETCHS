@@ -35,11 +35,11 @@ void buildNameList() {
   "<!DOCTYPE html><html><head><title>Title</title><meta charset=\"UTF-8\">" 
   "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head>" 
   "<body>"
-  "<style>.butStyle {background-color: #888; width:40%;margin-bottom: 10px;} .butStyleX {width: 100%;}"
+  "<style>.butStyle {background-color: #888; width:80%;margin-bottom: 10px;} .butStyleX {width: 100%;}"
   " * {padding: 0;margin: 0;box-sizing: border-box;}"
   ".wrapper{width: 100%;height: 100vh;display: flex;align-items: center;justify-content: center;background: #fff; margin-bottom: 15px;}"
   ".btn {position: relative;text-decoration: none;color: #fff;text-transform: uppercase;font-size: 13px;"
-  "width: 40%;min-height: 28px;padding: 5px 0px;display: flex;align-items: center;justify-content: center;" //параметры всей кнопки
+  "width: 80%;min-height: 28px;padding: 5px 0px;display: flex;align-items: center;justify-content: center;" //параметры всей кнопки
   "font-family: \"Micra Normal\";text-align: center;background-color: rgba(24, 27, 38, 0.8);overflow: hidden;"
   "border-radius: 2px;border: 1px solid #0f3d5b;clip-path: polygon(0% 36%,13% 0%,100% 0%,100% 0%,100% 65%,87.5% 100%,0% 100%,0% 100% );}"//параметры обрезаний
   ".btn:before, .btn:after, .btn > span:nth-of-type(2):before, .btn > span:nth-of-type(2):after {"
@@ -80,12 +80,9 @@ void buildNameList() {
     Serial.println("no files");
   }
 
-  textNameMenue += "<div class=\"btn\" ><a href=\"/textWin\" class=\"btn\" id='creatButton'>Creat file</a></div><p>";
-
-textNameMenue += "<div class=\"btn\" ><a href=\"/\" class=\"btn\" id='creatButton'>Creat directory</a></div>";
-
+  textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a href='/textWin' class='btn' id='creatButton' style='color:aqua'>Creat file</a></div><p>";
+  textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a href='/' class='btn' id='creatButton' style='color:aqua'>Creat directory</a></div>";
   textNameMenue += "<script>";
-
   textNameMenue +=
   "function sendButtonText(button) {"
   "var xhr = new XMLHttpRequest();xhr.onreadystatechange = function() {"
@@ -136,13 +133,30 @@ void openTextWindow(){
   "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'>" 
   "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
   "<title>Title</title></head><body>"
-  "<style>.butStyle {width: 100%;} .textarea{width: 100vw; height: 50vh; resize: none;}</style>";
+  "<style> .textarea{width: 100vw; height: 50vh; resize: none;}"
+  " * {padding: 0;margin: 0;box-sizing: border-box;}"
+  ".wrapper{width: 100%;height: 100vh;display: flex;align-items: center;justify-content: center;background: #fff; margin-bottom: 15px;}"
+  ".btn {position: relative;text-decoration: none;color: #fff;text-transform: uppercase;font-size: 13px;"
+  "width: 100%;min-height: 28px;padding: 5px 0px;display: flex;align-items: center;justify-content: center;" //параметры всей кнопки
+  "font-family: \"Micra Normal\";text-align: center;background-color: rgba(24, 27, 38, 0.8);overflow: hidden;"
+  "border-radius: 2px;border: 1px solid #0f3d5b;clip-path: polygon(0% 36%,13% 0%,100% 0%,100% 0%,100% 65%,87.5% 100%,0% 100%,0% 100% );}"//параметры обрезаний
+  ".btn:before, .btn:after, .btn > span:nth-of-type(2):before, .btn > span:nth-of-type(2):after {"
+  "content: "";position: absolute;background: #0f3d5b;} .btn:before, .btn:after {width: calc(100% - 12px);height: 1px;display: none;}"
+  ".btn:before {top: 0;left: 12px;position: absolute;} .btn:after {bottom: 0;left: 12px;}"
+  ".btn > span {position: absolute;top: 0;left: 0;width: 100%;height: 100%;}"
+  ".btn > span:nth-of-type(2):before {height: 26px;width: 1px; -webkit-transform: rotate(54deg); transform: rotate(49deg);}"
+  ".btn > span:nth-of-type(2):after {height: 26px;width: 1px; -webkit-transform: rotate(45deg);transform: rotate(49deg);}"
+  ".btn > span:nth-of-type(2):before {top: -6.3px;left: 1.8px;}"
+  ".btn > span:nth-of-type(2):after {bottom: -6.3px;right: 1.8px;}"
+  "</style>";
 
-  textWindow += "Start edit: " + butText;
+  textWindow += "<div style='solid 4px; width:100%;text-align: center;border: 5px solid teal; margin-bottom: 5px; color:aqua;'>Start edit: " + butText + "</div>";
 
-  textWindow += "<textarea id='story' class = 'textarea' placeholder='To write...'>" + fileData + "</textarea>";
+  textWindow += "<textarea id='story' class = 'textarea' placeholder='To write...' style=' margin-bottom: 15px; color:teal;'>" + fileData + "</textarea>";
 
-    textWindow += "<button class='butStyle' onclick=\"location.href='/'\">Back to home</button><p>";
+    textWindow += "<div class='btn' style='margin-bottom: 10px;'><a href='/textWin' class='btn' id='saveFile' style='color:aqua;'>Save file</a></div><p>";
+    textWindow += "<div class='btn' style='margin-bottom: 10px;'><a href='/textWin' class='btn' id='deleteFile' style='color:aqua;'>Delete</a></div><p>";
+    textWindow += "<div class='btn' style='margin-bottom: 10px;'><a href='/' class='btn' id='toHome' style='color:aqua'>Back to home</a></div><p>";    
     textWindow += "<script></script>";
     textWindow += "</body></html>";
     
