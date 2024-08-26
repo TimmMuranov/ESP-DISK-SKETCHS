@@ -4,6 +4,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <FS.h>
+#include <string.h>
 
 #define MAX_BUFFER 1024
 
@@ -14,21 +15,26 @@ File root;
 
 ESP8266WebServer server(80);
 
-String nameList = "";
 String butText = "";
+String myDir = "/";
 
 void buildNameList() {
-    butText ="";
+  String nameList = "";
+  root = SD.open(myDir);
+  butText ="";
     while (true) {
         File entry = root.openNextFile();
         if (!entry) break; 
-        nameList += entry.name();
-        if (nameList.length() > 0 && nameList[nameList.length() - 1] != '/') {
-            nameList += "&";
+        if (entry.isDirectory()) {
+            nameList = entry.name() + '?' + nameList;
+        } else {
+            nameList += entry.name();
+            if (nameList.length() > 0 && nameList[nameList.length() - 1] != '/') {
+                nameList += "&";
+            }
         }
-        entry.close(); // Закрываем текущий файл перед началом нового цикла
+        entry.close();
     }
-    // Выводим список файлов в консоль
     Serial.println(nameList);
 
   String textNameMenue = 
@@ -39,7 +45,7 @@ void buildNameList() {
   " * {padding: 0;margin: 0;box-sizing: border-box;}"
   ".wrapper{width: 100%;height: 100vh;display: flex;align-items: center;justify-content: center;background: #fff; margin-bottom: 15px;}"
   ".btn {position: relative;text-decoration: none;color: #fff;text-transform: uppercase;font-size: 13px;"
-  "width: 80%;min-height: 28px;padding: 5px 0px;display: flex;align-items: center;justify-content: center;" //параметры всей кнопки
+  "width: 100%;min-height: 28px;padding: 5px 0px;display: flex;align-items: center;justify-content: center;" //параметры всей кнопки
   "font-family: \"Micra Normal\";text-align: center;background-color: rgba(24, 27, 38, 0.8);overflow: hidden;"
   "border-radius: 2px;border: 1px solid #0f3d5b;clip-path: polygon(0% 36%,13% 0%,100% 0%,100% 0%,100% 65%,87.5% 100%,0% 100%,0% 100% );}"//параметры обрезаний
   ".btn:before, .btn:after, .btn > span:nth-of-type(2):before, .btn > span:nth-of-type(2):after {"
@@ -51,6 +57,8 @@ void buildNameList() {
   ".btn > span:nth-of-type(2):before {top: -6.3px;left: 1.8px;}"
   ".btn > span:nth-of-type(2):after {bottom: -6.3px;right: 1.8px;}"
   "</style>";//создаем заголовок html файла
+
+  textNameMenue += "<div style=' width:100%;text-align:center; border:5px solid teal; margin-bottom: 10px; color:aqua'>DIRECTORY IS: " + myDir + "</div>";
   
   String fileName = "";
   int butNumber = 0;
@@ -80,8 +88,8 @@ void buildNameList() {
     Serial.println("no files");
   }
 
-  textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a href='/textWin' class='btn' id='creatButton' style='color:aqua'>Creat file</a></div><p>";
-  textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a href='/' class='btn' id='creatButton' style='color:aqua'>Creat directory</a></div>";
+  textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a class='btn'><button id='creatBut' style='background:teal; width: 75%;' onclick = 'CreatFile()'>CREAT FILE</button></a></div><p>";
+  textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a class='btn'><button id='creatDir' style='background:SteelBlue; width: 75%;' onclick = 'CreatDir()'>CREAT DIRECTORY</button></a></div>";
   textNameMenue += "<script>";
   textNameMenue +=
   "function sendButtonText(button) {"
@@ -93,8 +101,9 @@ void buildNameList() {
   "xhr.send(\"buttonText=\" + button.textContent);"
   "window.location.href = '/textWin';}"
   "document.querySelectorAll('.butStyle').forEach(button => {"
-  "button.addEventListener('click', function() {sendButtonText(this);});});";
-    
+  "button.addEventListener('click', function() {sendButtonText(this);});});"
+  "function CreatFile(){location.href = 'textWin';}"
+  "function CreatDir(){alert ('not work');}";
   textNameMenue += "</script>";
 
   textNameMenue += "</body></html>"; //закрываем форму
@@ -150,14 +159,17 @@ void openTextWindow(){
   ".btn > span:nth-of-type(2):after {bottom: -6.3px;right: 1.8px;}"
   "</style>";
 
-  textWindow += "<div style='solid 4px; width:100%;text-align: center;border: 5px solid teal; margin-bottom: 5px; color:aqua;'>Start edit: " + butText + "</div>";
+  textWindow += "<div style='solid 4px; width:100%;text-align: center;border: 5px solid teal; margin-bottom: 5px; color:aqua;'>START EDIT: <input type='text' value='" +  butText + "' style='color:PaleTurquoise;'></div>";
 
   textWindow += "<textarea id='story' class = 'textarea' placeholder='To write...' style=' margin-bottom: 15px; color:teal;'>" + fileData + "</textarea>";
 
-    textWindow += "<div class='btn' style='margin-bottom: 10px;'><a href='/textWin' class='btn' id='saveFile' style='color:aqua;'>Save file</a></div><p>";
-    textWindow += "<div class='btn' style='margin-bottom: 10px;'><a href='/textWin' class='btn' id='deleteFile' style='color:aqua;'>Delete</a></div><p>";
+    textWindow += "<div class='btn' style='margin-bottom: 10px;'><a class='btn' id='saveFile' style='color:aqua;'><button id='saveFileBtn' style='color:aqua; width: 75%;' onclick = 'Save()'>SAVE FILE</button></a></div><p>";
+    textWindow += "<div class='btn' style='margin-bottom: 10px;'><a class='btn' id='deleteFile' style='color:aqua;'><button id='saveFileBtn' style='color:aqua; width: 75%;' onclick = 'Delete()'>DELETE FILE</button></a></div><p>";
     textWindow += "<div class='btn' style='margin-bottom: 10px;'><a href='/' class='btn' id='toHome' style='color:aqua'>Back to home</a></div><p>";    
-    textWindow += "<script></script>";
+    textWindow += "<script>"
+    "function Save(){location.href='/textWin'}"
+    "function Delete(){location.href='/textWin'}"
+    "</script>";
     textWindow += "</body></html>";
     
     server.send(200, "text/html", textWindow);
@@ -170,7 +182,7 @@ void setup() {
   Serial.print("Initializing SD card...");
   if(!SD.begin(4)){Serial.println("initialization failed!"); return;}
   Serial.println("initialization done.");
-  root = SD.open("/");
+  //root = SD.open("/");
   Serial.println("done!");
 
     WiFi.mode(WIFI_AP); // Установка режима точки доступа
