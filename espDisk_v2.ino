@@ -112,9 +112,14 @@ void buildNameList() {
   "window.location.href = '/textWin';}"
   "document.querySelectorAll('.butStyle').forEach(button => {"
   "button.addEventListener('click', function() {sendButtonText(this);});});"
+  
   "function CreatFile(){location.href = 'textWin';}"
+  
   "function CreatDir(){var userInput = prompt('Enter directory name:');"
-  "if (userInput) {alert('Вы ввели: ' + userInput);}}";
+  "if (!userInput) {alert('Enter directory name!'); return;}"
+  "var xhr = new XMLHttpRequest(); xhr.open('POST', '/creatDir', true); xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');"
+  "xhr.onreadystatechange = function () {if (xhr.readyState === 4 && xhr.status === 200) {console.log('Запрос успешно отправлен');"
+  "} else {console.error('Ошибка при отправке запроса');}}; xhr.send('text=' + userInput); }";
   textNameMenue += "</script>";
 
   textNameMenue += "</body></html>"; //закрываем форму
@@ -189,6 +194,11 @@ void openTextWindow(){
     server.send(200, "text/html", textWindow);
 }
 
+void creatDir(){
+  String dirName = server.arg("text");
+  Serial.println(dirName);
+}
+
 void readme(){
   String rText=
   "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'>" 
@@ -229,6 +239,7 @@ void setup() {
     server.on("/load", catchFile);
     server.on("/textWin", openTextWindow);
     server.on("/readme", readme);
+    server.on("/creatDir", creatDir);
 
     server.begin();
     Serial.println("Access Point started");
