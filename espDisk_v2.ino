@@ -26,7 +26,11 @@ void buildNameList() {
         File entry = root.openNextFile();
         if (!entry) break; 
         if (entry.isDirectory()) {
-            nameList = entry.name() + '?' + nameList;
+            nameList += entry.name();
+            if (nameList.length() > 0 && nameList[nameList.length() - 1] != '/') {
+                nameList += "?";
+            }
+            Serial.println("dir++");
         } else {
             nameList += entry.name();
             if (nameList.length() > 0 && nameList[nameList.length() - 1] != '/') {
@@ -35,6 +39,16 @@ void buildNameList() {
         }
         entry.close();
     }
+
+    String str1=""; String file=""; String dir="";
+    for(int x=0; x<nameList.length(); ++x){
+      if(nameList[x]=='&'){file += str1 + '&'; str1="";}
+      else if(nameList[x]=='?'){dir += str1 + '?'; str1="";}
+      else{str1+=nameList[x];}
+    }
+    nameList.clear();
+    nameList = dir + file;
+    
     Serial.println(nameList);
 
   String textNameMenue = 
@@ -197,6 +211,13 @@ void openTextWindow(){
 void creatDir(){
   String dirName = server.arg("text");
   Serial.println(dirName);
+  if(SD.exists(dirName)){
+    File file = SD.open(dirName);
+    if(file.isDirectory()){
+      return;
+    }
+  }
+  Serial.println(SD.mkdir(myDir + dirName));
 }
 
 void readme(){
