@@ -67,16 +67,24 @@ void buildNameList() {
     fileName = "";
     butNumber = 0;
     for (int x=0; x<nameList.length(); ++x){
-      if(nameList[x] != '&'){
-        fileName += nameList[x];
-      }
-      else {
+      if(nameList[x] == '&'){
         textNameMenue += "<button id='";
         textNameMenue += butNumber;
-        textNameMenue += "' class=\"butStyle\">";
+        textNameMenue += "' class='butStyle'>";
         textNameMenue += fileName;
         textNameMenue += "</button><p>";
         butNumber ++; fileName = "";
+      }
+      else if(nameList[x] == '?'){
+        textNameMenue += "<button id='";
+        textNameMenue += butNumber;
+        textNameMenue += "dir' class='butStyle' style='background-color:DeepSkyBlue'>";
+        textNameMenue += fileName;
+        textNameMenue += "</button><p>";
+        butNumber ++; fileName = "";
+      }
+      else {
+        fileName += nameList[x];
       }
    }
     Serial.println("buttons are created");
@@ -90,6 +98,8 @@ void buildNameList() {
 
   textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a class='btn'><button id='creatBut' style='background:teal; width: 75%;' onclick = 'CreatFile()'>CREAT FILE</button></a></div><p>";
   textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a class='btn'><button id='creatDir' style='background:SteelBlue; width: 75%;' onclick = 'CreatDir()'>CREAT DIRECTORY</button></a></div>";
+  textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a class='btn' href='/readme' style='color: teal;'>README</a></div>";
+  
   textNameMenue += "<script>";
   textNameMenue +=
   "function sendButtonText(button) {"
@@ -103,7 +113,8 @@ void buildNameList() {
   "document.querySelectorAll('.butStyle').forEach(button => {"
   "button.addEventListener('click', function() {sendButtonText(this);});});"
   "function CreatFile(){location.href = 'textWin';}"
-  "function CreatDir(){alert ('not work');}";
+  "function CreatDir(){var userInput = prompt('Enter directory name:');"
+  "if (userInput) {alert('Вы ввели: ' + userInput);}}";
   textNameMenue += "</script>";
 
   textNameMenue += "</body></html>"; //закрываем форму
@@ -159,7 +170,7 @@ void openTextWindow(){
   ".btn > span:nth-of-type(2):after {bottom: -6.3px;right: 1.8px;}"
   "</style>";
 
-  textWindow += "<div style='solid 4px; width:100%;text-align: center;border: 5px solid teal; margin-bottom: 5px; color:aqua;'>START EDIT: <input type='text' value='" +  butText + "' style='color:PaleTurquoise;'></div>";
+  textWindow += "<div style='solid 4px; width:100%;text-align: center;border: 5px solid teal; margin-bottom: 5px; color:aqua;'>FILE NAME: <input id='textNameWindow' type='text' value='" +  butText + "' style='color:PaleTurquoise;'></div>";
 
   textWindow += "<textarea id='story' class = 'textarea' placeholder='To write...' style=' margin-bottom: 15px; color:teal;'>" + fileData + "</textarea>";
 
@@ -167,12 +178,34 @@ void openTextWindow(){
     textWindow += "<div class='btn' style='margin-bottom: 10px;'><a class='btn' id='deleteFile' style='color:aqua;'><button id='saveFileBtn' style='color:aqua; width: 75%;' onclick = 'Delete()'>DELETE FILE</button></a></div><p>";
     textWindow += "<div class='btn' style='margin-bottom: 10px;'><a href='/' class='btn' id='toHome' style='color:aqua'>Back to home</a></div><p>";    
     textWindow += "<script>"
-    "function Save(){location.href='/textWin'}"
+    "function Save(){var textName = document.getElementById('textNameWindow').value;"
+    "if (textName === '') {alert('Введите название текста');}"
+    "else {location.href = '/textWin';}}"
+    
     "function Delete(){location.href='/textWin'}"
     "</script>";
     textWindow += "</body></html>";
     
     server.send(200, "text/html", textWindow);
+}
+
+void readme(){
+  String rText=
+  "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'>" 
+  "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
+  "<title>Title</title></head><body>"
+  "<div style='background-color: DarkSlateGrey; width: 100%; color:aqua;'>"
+  "Добро пожаловать на мини сервер ESP-DISK!<p>"
+  "Здесь можно создавать текстовые файлы и папки (каталоги).<p>"
+  "Кнопки 'Creat File', 'Creat directory' создают эти объекты в том каталоге, в котором вы находитесь (Изначальная позиция - корневой каталог /).<p>"
+  "Кнопки создают два типа файлов: серые файлы - это текстовые документы. Синие файлы - это каталоги.<p>"
+  "Нажатие на каталог переместит вас в него и отобразит все файлы этого каталога. Нажатие на текстовый документ откроет его в окне для редактирования.<p>" 
+  "В названии файлов и каталогов могут фигурировать символы русского, английского алфавита в любом регистре и цифры. Также доступны скобки, запятые и точки.<p>"
+  "Использование прочих служебных символов запрещено. Возможна некорректная работа сервера<p>"
+  "</div>"
+  "<button style='background-color:Teal' onclick=location.href='/'>BACK TO HOME</button>"
+  "</body></html>";
+  server.send(200, "text/html", rText);
 }
 
 void setup() {
@@ -195,6 +228,7 @@ void setup() {
     server.on("/", buildNameList);
     server.on("/load", catchFile);
     server.on("/textWin", openTextWindow);
+    server.on("/readme", readme);
 
     server.begin();
     Serial.println("Access Point started");
