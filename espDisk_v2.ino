@@ -110,8 +110,8 @@ void buildNameList() {
     Serial.println("no files");
   }
 
-  textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a class='btn'><button id='creatBut' style='background:teal; width: 75%;' onclick = 'CreatFile()'>CREAT FILE</button></a></div><p>";
-  textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a class='btn'><button id='creatDir' style='background:SteelBlue; width: 75%;' onclick = 'CreatDir()'>CREAT DIRECTORY</button></a></div>";
+  textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a class='btn'><button id='creatBut' style='background:teal; width: 75%;' onclick = 'CreatFile()'>NEW FILE</button></a></div><p>";
+  textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a class='btn'><button id='creatDir' style='background:SteelBlue; width: 75%;' onclick = 'CreatDir()'>NEW DIRECTORY</button></a></div>";
   textNameMenue += "<div class='btn' style='margin-bottom: 10px;'><a class='btn' href='/readme' style='color: teal;'>README</a></div>";
   
   textNameMenue += "<script>";
@@ -133,7 +133,7 @@ void buildNameList() {
   "if (!userInput) {alert('Enter directory name!'); return;}"
   "var xhr = new XMLHttpRequest(); xhr.open('POST', '/creatDir', true); xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');"
   "xhr.onreadystatechange = function () {if (xhr.readyState === 4 && xhr.status === 200) {console.log('Запрос успешно отправлен');"
-  "} else {console.error('Ошибка при отправке запроса');}}; xhr.send('text=' + userInput); }";
+  "} else {console.error('Ошибка при отправке запроса');}}; xhr.send('text=' + userInput);}";
   textNameMenue += "</script>";
 
   textNameMenue += "</body></html>"; //закрываем форму
