@@ -36,28 +36,71 @@ void handleRoot()
 {   
     if (server.hasArg("open"))
     {
-      server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body> Loading the text... <script>location.href='/?write=1';</script></body></html>");
+      server.send(200, "text/html", 
+      "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'></head>"
+      "<body> Loading the text... <script>location.href='/?write=1';</script></body></html>");
     }
     else if (server.hasArg("write"))
     {
-        server.send(200, "text/html", "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Text Editor</title><style>#textEditorWindow {display: none;}.textEditor {width: 100%;height: 400px;padding: 10px;border: 1px solid #ccc;box-sizing: border-box;resize: vertical;}</style></head><body><div id=\"textEditorWindow\"><textarea class=\"textEditor\" id=\"textArea\" placeholder=\"To write...\">" + fileDataToOpen + "</textarea><button type=\"button\" onclick=\"window.close(); location.href='/'\">Close</button><button type=\"button\" onclick=\"saveText();\">Save</button></div>  <div style=\"position: fixed; right: 0;\"><input type=\"text\" id=\"inputText\" placeholder=\"Text name\"></div>    <script>  function saveText() { var textName = document.getElementById('inputText').value; var textData = document.getElementById('textArea').value; if (textName) { fetch('/save', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name: textName, data: textData }) }) .then(response => response.text()) .then(data => { alert(data);});location.href='/' } else { alert(\"Please enter text name.\"); }}   document.addEventListener('DOMContentLoaded', function() { document.getElementById('textEditorWindow').style.display = 'block'; });      document.addEventListener('DOMContentLoaded', function() {document.getElementById('inputText').value = '" + fileNameToOpen + "';});  </script></body></html>");
+        server.send(200, "text/html", 
+        "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>Text Editor</title>"
+        "<style>#textEditorWindow {display: none;}.textEditor {width: 100%;height: 400px;padding: 10px;border: 1px solid #ccc;box-sizing: border-box;resize: vertical;}</style></head>"
+        "<body><div id='textEditorWindow'><textarea class='textEditor' id='textArea' placeholder='To write...'>" + fileDataToOpen + "</textarea>"
+        "<button type=\"button\" onclick=\"window.close(); location.href='/'\">Close</button><button type='button' onclick='saveText();'>Save</button>"
+        "</div>  <div style='position: fixed; right: 0;'><input type='text' id='inputText' placeholder='Text name'></div>"
+        
+        "<script>function saveText() {var textName = document.getElementById('inputText').value; var textData = document.getElementById('textArea').value;"
+        "if (textName) { fetch('/save', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: textName, data: textData})})"
+        ".then(response => response.text()) .then(data => { alert(data);});location.href='/' } else { alert('Please enter text name.'); }}"
+        "document.addEventListener('DOMContentLoaded', function() { document.getElementById('textEditorWindow').style.display = 'block'; });"
+        "document.addEventListener('DOMContentLoaded', function() {document.getElementById('inputText').value = '" + fileNameToOpen + "';});"
+        "</script></body></html>");
     digitalWrite(2, LOW);
     flag = 0;
     }
     else if (server.hasArg("listDocuments"))
     {
-        server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><button onclick=\"location.href='/'\">Back to home</button><p>" + printDirectory(root, 0) + "</body></html>");
-    digitalWrite(2, HIGH);
-    Serial.println("запись запущена");
+      server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head>"
+      "<body><button onclick=\"location.href='/'\">Back to home</button><p>" + printDirectory(root, 0) + "</body></html>");
+      digitalWrite(2, HIGH);
+      Serial.println("запись запущена");
     }
     else if (server.hasArg("readmi"))
     {
-      server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><h1>Welcome to the web notebock!</h1><p>This devices function is creat, save and delete text files.</p><p>Device based on the tree of the directories.</p><h2>To create a document tap to one-name button.</h2><p>You will be taken to the text entry page.</p><p>The large window is for entering text and the small window at the bottom is for the title of the text. (Entering the title of the text is required!)</p><h2>To see the saved text tap to one-name button (in the home directory).</h2><p>You will be taken to the storage of the text.</p><button onclick=\"location.href='/'\">To home</button></body>");
+      server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><h1>"
+      "Welcome to the web notebock!</h1>"
+      "<p>This devices function is creat, save and delete text files.</p>"
+      "<p>Device based on the tree of the directories.</p>"
+      "<h2>To create a document tap to one-name button.</h2>"
+      "<p>You will be taken to the text entry page.</p>"
+      "<p>The large window is for entering text and the small window at the bottom is for the title of the text. (Entering the title of the text is required!)</p>"
+      "<h2>To see the saved text tap to one-name button (in the home directory).</h2>"
+      "<p>You will be taken to the storage of the text."
+      "</p><button onclick=\"location.href='/'\">To home</button></body>");
     digitalWrite(2, HIGH);
     }
     else
     {
-        server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><button onclick=\"location.href='/?listDocuments=1'\">Document's list</button><p>           <button id=\"openDocButton\">Open document</button>  <div id=\"OpenWindow\" style=\"display: none;\"><input type=\"text\" id=\"textInputOpen\"><button id=\"closeWindowButton\" onclick=\"location.href = '/?open=1'\">Open</button></div>      <p><button id=\"deleteDocButton\" >Delete document</button><div id=\"deleteWindow\" style=\"display: none;\"><input type=\"text\" id=\"textInputDel\"><button id=\"deleteButton\" onclick=\"location.href='/?listDocuments=1'\">Delete</button></div>   <p><button onclick=\"location.href='/?readmi=1'\">Readmi</button>      <script>document.getElementById('openDocButton').addEventListener('click', function() {var openWindow = document.getElementById('OpenWindow');if (openWindow.style.display === 'none') {openWindow.style.display = 'block';} else {var textInput = document.getElementById('textInput');if (!textInput.value) {openWindow.style.display = 'none';} else {window.location.href = '/?write=1/';}}});  document.getElementById('closeWindowButton').addEventListener('click', function() {var openWindow = document.getElementById('OpenWindow');OpenWindow.style.display = 'none';});      function toggleDeleteWindow() {var deleteWindow = document.getElementById('deleteWindow');if (deleteWindow.style.display === 'none') {deleteWindow.style.display = 'block';} else {deleteWindow.style.display = 'none';}} var deleteButton = document.getElementById('deleteDocButton');deleteButton.addEventListener('click', toggleDeleteWindow);     function deleteText() {var fileName = document.getElementById('textInputDel').value;fetch('/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileName: fileName }) }) .then(response => response.json()) .then(data => {console.log(data); }) .catch(error => {console.error('Error:', error);}); }document.addEventListener('DOMContentLoaded', function() {document.getElementById('textInputDel').addEventListener('change', deleteText); });              function sendTextToServer() {var text = document.getElementById('textInputOpen').value;fetch('/open', {method: 'POST', headers: { 'Content-Type': 'application/json'}, body: JSON.stringify({text: text})}) .then(response => response.json()) .then(data => { console.log(data);}) .catch(error => { console.error('Error:', error);});}document.getElementById('closeWindowButton').addEventListener('click', sendTextToServer);   </script>      </body></html>");
+        server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body>"
+        "<button onclick=\"location.href='/?listDocuments=1'\">Document's list</button><p>"   
+        "<button id='openDocButton'>Open document</button>  <div id='OpenWindow' style='display: none;'><input type='text' id='textInputOpen'>"
+        "<button id='closeWindowButton' onclick=\"location.href = '/?open=1'\">Open</button></div> "
+        "<p><button id='deleteDocButton' >Delete document</button><div id='deleteWindow' style='display: none;'><input type='text' id='textInputDel'>"
+        "<button id='deleteButton' onclick=\"location.href='/?listDocuments=1'\">Delete</button></div>"
+        "<p><button onclick=\"location.href='/?readmi=1'\">Readmi</button>"  
+        "<script>"
+        "document.getElementById('openDocButton').addEventListener('click', function() {var openWindow = document.getElementById('OpenWindow');"
+        "if (openWindow.style.display === 'none') {openWindow.style.display = 'block';} else {var textInput = document.getElementById('textInput');"
+        "if (!textInput.value) {openWindow.style.display = 'none';} else {window.location.href = '/?write=1/';}}}); "
+        "document.getElementById('closeWindowButton').addEventListener('click', function() {var openWindow = document.getElementById('OpenWindow');OpenWindow.style.display = 'none';});"
+        "function toggleDeleteWindow() {var deleteWindow = document.getElementById('deleteWindow');if (deleteWindow.style.display === 'none') {deleteWindow.style.display = 'block';} else {deleteWindow.style.display='none';}}"
+        "var deleteButton = document.getElementById('deleteDocButton');deleteButton.addEventListener('click', toggleDeleteWindow);"
+        "function deleteText() {var fileName = document.getElementById('textInputDel').value;fetch('/delete', { method: 'POST', headers: {'Content-Type': 'application/json'},body: JSON.stringify({ fileName: fileName })})"
+        ".then(response => response.json()) .then(data => {console.log(data); }) "
+        ".catch(error => {console.error('Error:', error);}); }document.addEventListener('DOMContentLoaded', function() {document.getElementById('textInputDel').addEventListener('change', deleteText); });"
+        "function sendTextToServer() {var text = document.getElementById('textInputOpen').value;fetch('/open', {method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: text})})"
+        ".then(response => response.json()) .then(data => { console.log(data);}) .catch(error => { console.error('Error:', error);});}document.getElementById('closeWindowButton').addEventListener('click', sendTextToServer);"
+        "</script></body></html>");
     digitalWrite(2, HIGH);
     }
 }
