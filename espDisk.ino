@@ -10,28 +10,44 @@ const char *ssid = "TimsServer"; // Имя вашей Wi-Fi сети
 const char *password = "12345678"; // Пароль от вашей Wi-Fi сети
 ESP8266WebServer server(80);
 
+const char *myDir = "/";
 String fileNameToOpen = "";
 String fileDataToOpen = "";
 byte flag = 0;
 
-String printDirectory(File dir, int numTabs) {
-    String result = "";
+String createButtonList(String path) {
+    String buttonHtml = "<div>";
+    File dir = SD.open(path);
+    if (!dir) {
+        Serial.println("Failed to open directory: " + path);
+        buttonHtml += "</div>";
+        return buttonHtml;
+    }
     while (true) {
         File entry = dir.openNextFile();
         if (!entry) break;
-        for (uint8_t i = 0; i < numTabs; i++) {
-            result += '\t';
-        }
-        result += entry.name();
+
         if (entry.isDirectory()) {
-            result += "/";
-            result += printDirectory(entry, numTabs + 1);
+            String buttonStyle = "style='background-color:RoyalBlue;'";
+            buttonHtml += "<button onclick='openFile()' " + buttonStyle + ">" + entry.name() + "</button><p>";
         }
-        result += "<p>";
         entry.close();
     }
-    return result;
+    dir.rewindDirectory();
+    while (true) {
+        File entry = dir.openNextFile();
+        if (!entry) break;
+
+        if (!entry.isDirectory()) {
+            String buttonStyle = "";
+            buttonHtml += "<button onclick='openFile()' " + buttonStyle + ">" + entry.name() + "</button><p>";
+        }
+        entry.close();
+    }
+    buttonHtml += "</div>";
+    return buttonHtml;
 }
+
 void handleRoot()
 {   
     if (server.hasArg("open"))
@@ -61,7 +77,12 @@ void handleRoot()
     else if (server.hasArg("listDocuments"))
     {
       server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head>"
-      "<body><button onclick=\"location.href='/'\">Back to home</button><p>" + printDirectory(root, 0) + "</body></html>");
+      "<body>" + createButtonList(myDir) + "<p><hr><p><button onclick=\"location.href='/'\" style='background-color:red;'>Back to home</button>"
+      "<script> function openFile(){"
+      "alert('не работает');"
+       //обработчик нажатия кнопок должен брать названия кнопок и если это директория - переходить, если файл - читать и сохранять содержимое  
+      "}"
+      "</script></body></html>");
       digitalWrite(2, HIGH);
       Serial.println("запись запущена");
     }
@@ -76,7 +97,7 @@ void handleRoot()
       "<p>The large window is for entering text and the small window at the bottom is for the title of the text. (Entering the title of the text is required!)</p>"
       "<h2>To see the saved text tap to one-name button (in the home directory).</h2>"
       "<p>You will be taken to the storage of the text."
-      "</p><button onclick=\"location.href='/'\">To home</button></body>");
+      "</p><p><hr><p><button onclick=\"location.href='/'\" style='background-color:red;'>Back to home</button></body>");
     digitalWrite(2, HIGH);
     }
     else
@@ -173,7 +194,6 @@ while(!Serial){}
   if(!SD.begin(4)){Serial.println("initialization failed!"); return;}
   Serial.println("initialization done.");
   root = SD.open("/");
-  printDirectory(root, 0);
   Serial.println("done!");
 
     WiFi.mode(WIFI_AP);
