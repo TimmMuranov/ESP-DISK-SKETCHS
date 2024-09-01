@@ -178,11 +178,7 @@ while(!Serial){}
 
     WiFi.mode(WIFI_AP);
     WiFi.softAP(ssid, password);
-    IPAddress ip(192, 168, 1, 1);
-    IPAddress gateway(192, 168, 1, 1); 
-    IPAddress subnet(255, 255, 255, 0);
-    WiFi.softAPConfig(ip, gateway, subnet);
-
+    //здесь можно указать подробноси ip адреса. По умолчанию - 192.168.4.1
     server.on("/", handleRoot);
     server.on("/save", HTTP_POST, handleSave);
     server.on("/delete", HTTP_POST, handleDelete);
