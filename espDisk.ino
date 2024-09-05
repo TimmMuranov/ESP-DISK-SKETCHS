@@ -10,7 +10,7 @@ const char *ssid = "TimsServer"; // Имя вашей Wi-Fi сети
 const char *password = "12345678"; // Пароль от вашей Wi-Fi сети
 ESP8266WebServer server(80);
 
-const char *myDir = "/";
+String myDir = "/";
 String fileNameToOpen = "";
 String fileDataToOpen = "";
 byte flag = 0;
@@ -23,16 +23,21 @@ String createButtonList(String path) {
         buttonHtml += "</div>";
         return buttonHtml;
     }
+    int flag = 0;
     while (true) {
         File entry = dir.openNextFile();
         if (!entry) break;
 
         if (entry.isDirectory()) {
             String buttonStyle = "style='background-color:RoyalBlue;'";
-            buttonHtml += "<button onclick='openFile()' " + buttonStyle + ">" + entry.name() + "</button><p>";
+            buttonHtml += "<button id = 'd";
+            buttonHtml += flag;
+            buttonHtml += "' onclick='handle()' " + buttonStyle + ">" + entry.name() + "</button><p>";
         }
         entry.close();
+        ++flag;
     }
+    flag = 0;
     dir.rewindDirectory();
     while (true) {
         File entry = dir.openNextFile();
@@ -40,9 +45,12 @@ String createButtonList(String path) {
 
         if (!entry.isDirectory()) {
             String buttonStyle = "";
-            buttonHtml += "<button onclick='openFile()' " + buttonStyle + ">" + entry.name() + "</button><p>";
+            buttonHtml += "<button id = '";
+            buttonHtml += flag;
+            buttonHtml += "' onclick='handle()' " + buttonStyle + ">" + entry.name() + "</button><p>";
         }
         entry.close();
+        ++flag;
     }
     buttonHtml += "</div>";
     return buttonHtml;
@@ -66,10 +74,10 @@ void handleRoot()
         "</div>  <div style='position: fixed; right: 0;'><input type='text' id='inputText' placeholder='Text name'></div>"
         
         "<script>function saveText() {var textName = document.getElementById('inputText').value; var textData = document.getElementById('textArea').value;"
-        "if (textName) { fetch('/save', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: textName, data: textData})})"
-        ".then(response => response.text()) .then(data => { alert(data);});location.href='/' } else { alert('Please enter text name.'); }}"
+        "if (textName) {fetch('/save', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: textName, data: textData})})"
+        ".then(response => response.text()) .then(data => {alert(data);});location.href='/' } else { alert('Please enter text name.');}}"
         "document.addEventListener('DOMContentLoaded', function() { document.getElementById('textEditorWindow').style.display = 'block'; });"
-        "document.addEventListener('DOMContentLoaded', function() {document.getElementById('inputText').value = '" + fileNameToOpen + "';});"
+        "document.addEventListener('DOMContentLoaded', function() {document.getElementById('inputText').value = '" + myDir + fileNameToOpen + "';});"
         "</script></body></html>");
     digitalWrite(2, LOW);
     flag = 0;
@@ -77,48 +85,51 @@ void handleRoot()
     else if (server.hasArg("listDocuments"))
     {
       server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head>"
-      "<body>" + createButtonList(myDir) + "<p><hr><p><button onclick=\"location.href='/'\" style='background-color:red;'>Back to home</button>"
-      "<script> function openFile(){"
-      "alert('не работает');"
-       //обработчик нажатия кнопок должен брать названия кнопок и если это директория - переходить, если файл - читать и сохранять содержимое  
+      "<body>Your dir: " + myDir + "<p><hr><p> <button id='back' style = 'background-color:Blue;' onclick='handle()'>..</button>" + createButtonList(myDir) + "<p><hr><p><button onclick=\"location.href='/'\" style='background-color:red;'>Back to home</button>"
+      "<script>"
+      "function handle(){"
+      "const button = event.target; var button1 = document.getElementById(button.id); if(button.id !== 'back'){var buttonText = button1.innerHTML;} else{buttonText = 'back';}"
+      "fetch('/file', {method: 'POST', headers: {'Content-Type': 'application/json'},body: JSON.stringify({buttonText: buttonText})});"
       "}"
       "</script></body></html>");
       digitalWrite(2, HIGH);
-      Serial.println("запись запущена");
     }
     else if (server.hasArg("readmi"))
     {
       server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><h1>"
-      "Welcome to the web notebock!</h1>"
-      "<p>This devices function is creat, save and delete text files.</p>"
-      "<p>Device based on the tree of the directories.</p>"
-      "<h2>To create a document tap to one-name button.</h2>"
-      "<p>You will be taken to the text entry page.</p>"
-      "<p>The large window is for entering text and the small window at the bottom is for the title of the text. (Entering the title of the text is required!)</p>"
-      "<h2>To see the saved text tap to one-name button (in the home directory).</h2>"
-      "<p>You will be taken to the storage of the text."
-      "</p><p><hr><p><button onclick=\"location.href='/'\" style='background-color:red;'>Back to home</button></body>");
+      "Вы зашли на мини-сервер-блокнот-для-записей</h2>"
+      "<p>Здесь можно создавать, редактировать и удалять текстовые файлы и каталоги.</p>"
+      "<p>Правила довольно просты (просты ведь?):</p>"
+      "<p>- названия могут состоять из цифр или руских/английских букв.</p>"
+      "<p>- использование спец. символов (кроме нижнего подчеркивания) запрещено. Поведение сервера в таких случаях не определено.</p>"
+      "<p>- нельзя создавать одноименные файлы/каталоги</p>" 
+      "<p><hr><p><button onclick=\"location.href='/'\" style='background-color:red;'>Back to home</button></body>");
     digitalWrite(2, HIGH);
     }
     else
     {
         server.send(200, "text/html", "<!DOCTYPE html><html><head><title>Title</title><meta charset='UTF-8'><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body>"
-        "<button onclick=\"location.href='/?listDocuments=1'\">Document's list</button><p>"   
-        "<button id='openDocButton'>Open document</button>  <div id='OpenWindow' style='display: none;'><input type='text' id='textInputOpen'>"
-        "<button id='closeWindowButton' onclick=\"location.href = '/?open=1'\">Open</button></div> "
-        "<p><button id='deleteDocButton' >Delete document</button><div id='deleteWindow' style='display: none;'><input type='text' id='textInputDel'>"
-        "<button id='deleteButton' onclick=\"location.href='/?listDocuments=1'\">Delete</button></div>"
-        "<p><button onclick=\"location.href='/?readmi=1'\">Readmi</button>"  
+        "<button onclick=\"location.href='/?listDocuments=1'\">Список документов</button><p>"   
+        "<button id='openDocButton'>Создать/открыть документ</button>  <div id='OpenWindow' style='display: none;'><input type='text' id='textInputOpen'>"
+        "<button id='closeWindowButton' onclick=\"location.href = '/?open=1'\">открыть</button></div> "
+        "<p><button id='deleteDocButton' >Удалить документ</button><div id='deleteWindow' style='display: none;'><input type='text' id='textInputDel'>"
+        "<button id='deleteButton' onclick=\"location.href='/?listDocuments=1'\">удалить</button></div>"
+        "<p><button onclick=\"location.href='/?readmi=1'\">Readme</button>"  
         "<script>"
+        
         "document.getElementById('openDocButton').addEventListener('click', function() {var openWindow = document.getElementById('OpenWindow');"
-        "if (openWindow.style.display === 'none') {openWindow.style.display = 'block';} else {var textInput = document.getElementById('textInput');"
-        "if (!textInput.value) {openWindow.style.display = 'none';} else {window.location.href = '/?write=1/';}}}); "
+        "if (openWindow.style.display === 'none') {openWindow.style.display = 'block';"
+        "} else {var textInput = document.getElementById('textInputOpen');"
+        "if (!textInput.value) {openWindow.style.display = 'none';} else {window.location.href = '/?write=1/';}}});"
+        
         "document.getElementById('closeWindowButton').addEventListener('click', function() {var openWindow = document.getElementById('OpenWindow');OpenWindow.style.display = 'none';});"
         "function toggleDeleteWindow() {var deleteWindow = document.getElementById('deleteWindow');if (deleteWindow.style.display === 'none') {deleteWindow.style.display = 'block';} else {deleteWindow.style.display='none';}}"
         "var deleteButton = document.getElementById('deleteDocButton');deleteButton.addEventListener('click', toggleDeleteWindow);"
+        
         "function deleteText() {var fileName = document.getElementById('textInputDel').value;fetch('/delete', { method: 'POST', headers: {'Content-Type': 'application/json'},body: JSON.stringify({ fileName: fileName })})"
         ".then(response => response.json()) .then(data => {console.log(data); }) "
         ".catch(error => {console.error('Error:', error);}); }document.addEventListener('DOMContentLoaded', function() {document.getElementById('textInputDel').addEventListener('change', deleteText); });"
+        
         "function sendTextToServer() {var text = document.getElementById('textInputOpen').value;fetch('/open', {method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: text})})"
         ".then(response => response.json()) .then(data => { console.log(data);}) .catch(error => { console.error('Error:', error);});}document.getElementById('closeWindowButton').addEventListener('click', sendTextToServer);"
         "</script></body></html>");
@@ -134,11 +145,11 @@ void handleSave() {
         String textName = doc["name"];
         String textData = doc["data"];
 
-        if (SD.exists(textName)) {
-            SD.remove(textName);
+        if (SD.exists(myDir + textName)) {
+            SD.remove(myDir + textName);
         }
 
-        File myFile = SD.open(textName, FILE_WRITE);
+        File myFile = SD.open(myDir + textName, FILE_WRITE);
         if (myFile) {
             myFile.println(textData);
             myFile.close();
@@ -149,6 +160,7 @@ void handleSave() {
     } else {
         server.send(405, "text/plain", "Method Not Allowed");
     }
+    Serial.println("save function are played");
 }
 
 void handleOpen() {
@@ -161,7 +173,8 @@ void handleOpen() {
     String fileName = doc["text"];
     String fileData = "";
     fileNameToOpen = fileName;
-    File file = SD.open(fileName);
+    
+    File file = SD.open(myDir + fileName);
     if (file) {
         fileData = "";
         while (file.available()) {
@@ -170,7 +183,12 @@ void handleOpen() {
         }
         fileDataToOpen = fileData;
         file.close();
-    } else {
+    }
+    else if(file.isDirectory()){
+      Serial.println("is directory");
+      return;
+    }
+    else {
         Serial.println("File not found");
         return;
     }
@@ -183,8 +201,24 @@ void handleDelete() {
     DynamicJsonDocument doc(1024);
     deserializeJson(doc, json);
     String fileName = doc["fileName"];
-    SD.remove(fileName);
+    SD.remove(myDir + fileName);
     Serial.println("file deleted: " + fileName);
+}
+
+void handleFile(){
+    String json = server.arg("plain");
+    DynamicJsonDocument doc(1024);
+    deserializeJson(doc, json);
+    String buttonText = doc["buttonText"];
+    Serial.println("you pressed: " + buttonText);
+
+    if(buttonText == "back"){myDir = "/"; Serial.println("back to home dir"); return;}
+
+    File file = SD.open(myDir + buttonText);
+    if(file.isDirectory()){
+      myDir += buttonText + "/";
+      Serial.println("dir Changed to: " + myDir);
+    }
 }
 
 void setup() {
@@ -193,16 +227,17 @@ while(!Serial){}
   Serial.print("Initializing SD card...");
   if(!SD.begin(4)){Serial.println("initialization failed!"); return;}
   Serial.println("initialization done.");
-  root = SD.open("/");
+  root = SD.open(myDir);
   Serial.println("done!");
 
     WiFi.mode(WIFI_AP);
     WiFi.softAP(ssid, password);
     //здесь можно указать подробноси ip адреса. По умолчанию - 192.168.4.1
     server.on("/", handleRoot);
-    server.on("/save", HTTP_POST, handleSave);
+    server.on("/save", handleSave);
     server.on("/delete", HTTP_POST, handleDelete);
     server.on("/open", HTTP_POST, handleOpen);
+    server.on("/file", handleFile);
     server.begin();
     Serial.println("Access Point started");
 
