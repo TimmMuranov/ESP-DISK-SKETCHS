@@ -87,6 +87,25 @@ void readme(){
   server.send(200, "text/html", FsReader("readme.html"));
 }
 
+//============= Обработка нажатий на файлы ==============
+void handleFile() {
+    String plain = server.arg("plain"); // Получаем строку данных из аргумента "plain"
+    DynamicJsonDocument doc(1024); // Создаем динамический JSON документ размером 1024 байт
+    DeserializationError err = deserializeJson(doc, plain); // Десериализуем JSON документ
+    if (err) {
+        Serial.print("Ошибка десериализации: ");
+        Serial.println(err.c_str());
+        return;
+    }
+    
+    String textData = doc["data"]; // Получаем значение поля "data" из JSON документа
+    if (textData == "") {
+        Serial.println("Не найдено значение поля \"data\"");
+        return;
+    }
+    Serial.println("Вы нажали на " + textData);
+}
+
 //====================================================
 /////////////// Настройки сервера////////////////////
 //=====================================================
@@ -108,6 +127,7 @@ void setup() {
 
   server.on("/", homePage);
   server.on("/list", list);
+  server.on("/handleFile", handleFile);
   server.on("/readme", readme);
 
   server.begin();
