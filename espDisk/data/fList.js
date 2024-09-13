@@ -20,4 +20,5 @@ function dirText(event) {
         console.error('Error:', error);
         }
     );
+    location.href = "/list";
 }
