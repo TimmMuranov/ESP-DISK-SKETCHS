@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang='ru'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Text Editor</title>
+    <style>
+
+/*================== определение стилей ======================*/
+
+
+        .form-container {
+            width: 400px;
+            margin: auto;
+            overflow: hidden;
+        }
+        .input-area {
+            width: 100%;
+            height: 100px;
+            box-sizing: border-box;
+            resize: none;
+            outline: none;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .btn-submit {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover {
+            background-color: #43a047;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== страница ====================== -->
+
+    <div class="form-container">
+        <h2>Welcome to the ESP8266 server!</h2>
+        <textarea rows="10" cols="50" id="textArea" readonly></textarea>
+        <input placeholder="your command..." id = "inputArea">
+        <button class="btn-submit" id="submitButton">Enter</button>
+    </div>
+
+<script>
+//==================== код страницы ==========================
+  var helpData =
+`здесь описание сервера.
+help - выводит этот текст.
+clear - очищает конcоль.
+dir - выводит все папки в текущей папке`;
+
+  const textArea = document.getElementById('textArea');
+  const inputArea = document.getElementById('inputArea');
+  const submitButton = document.getElementById('submitButton');
+
+  submitButton.addEventListener('click', async () => {
+    const data = inputArea.value;
+    inputArea.value = '';
+
+    try {
+        // Отправляем данные на сервер и сохраняем ответ
+        const response = await fetch('/q', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ data })
+        });
+
+        console.log('Successfully sent data to server ' + data);
+
+        // Проверяем, был ли запрос успешным
+        if (!response.ok) {
+            textArea.value += 'Ошибка сервера: ' + response.statusText + '\n';
+            return;
+        }
+
+        // Получаем ответ от сервера
+        const serverResponseText = await response.text();
+
+//------------- добавление отловленных команд ---------------
+        if (data !== '') {
+            if (data === 'clear') {
+                textArea.value = '';
+                return;
+            }
+            textArea.value += serverResponseText;
+        }
+
+        textArea.scrollTop = textArea.scrollHeight;
+
+    } catch (error) {
+        console.error('Error sending data: ', error);
+        textArea.value += 'Ошибка отправки данных: ' + error + '\n';
+    }
+});
+
+document.addEventListener('keyup', event => {
+if (event.code === 'Enter') {
+  submitButton.click();
+  inputArea.focus();
+  }
+});
+</script>
+</body>
+</html>
