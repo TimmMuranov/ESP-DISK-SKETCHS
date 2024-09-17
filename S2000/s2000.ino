@@ -6,6 +6,7 @@
 
 #include "fsReader.h"
 #include "amogus.h"
+#include "exCom.h"
 
 const char *ssid = "TimsServer"; // Имя вашей Wi-Fi сети
 const char *password = "12345678"; // Пароль от вашей Wi-Fi сети
@@ -21,7 +22,6 @@ String takePost(){
   String data = server.arg("plain");
   if (data == "") {
     Serial.println("No data received.");
-    return "no data";
   }
 
   // Parse the JSON data
@@ -35,36 +35,39 @@ String takePost(){
   Serial.println(dataFile);
   command = dataFile;
 
-  if(dataFile == "dir"){
-    return dataFile + "\n" + takeDir() + "\n";
+  if(dataFile == "") return "\n>";
+
+  if(dataFile == "clear") return ">";
+
+  if(exCom(dataFile,1) == "dir"){
+    return exCom(dataFile,1) + "\n" + takeDir() + "\n>";
   }
-  else if(dataFile == "help"){
-    return dataFile + "\n" + FsReader("help.txt") + "\n";  
+  else if(exCom(dataFile,1) == "help"){
+    return exCom(dataFile,1) + "\n" + FsReader("help.txt") + "\n>";  
     }
-  else if(dataFile == "amogus"){
-    return dataFile + "\n" + "ТУ-ТУ-ТУ-ТУ-ТУ-ТУ-ТУ---------ТУ-ТУ-ТУ" + "\n";  
+  else if(exCom(dataFile,1) == "amogus"){
+    return exCom(dataFile,1) + "\n" + "ТУ-ТУ-ТУ-ТУ-ТУ-ТУ-ТУ---------ТУ-ТУ-ТУ\n>";  
     }
-  else if (dataFile == "pwd"){
-    return dataFile + "\n" + myDir + "\n";
+  else if (exCom(dataFile,1) == "pwd"){
+    return exCom(dataFile,1) + "\n" + myDir + "\n>";
   }
-  else if (dataFile.substring(0, 2) == "cd"){
-    return "команда cd пока не работает. Пока...\n";
+  else if (exCom(dataFile,1) == "cd"){
+    return exCom(dataFile,1) + "\n" + cd(dataFile) + "\n>";
   }
 
 //здесь можно добавить команды по следующей формуле:
 /*else if(dataFile == "command"){
-    return dataFile + "\n" + String function() или "текст" + "\n";  
+    return exCom(dataFile,1) + "\n" + String function() или "текст" + "\n>";  
     }*/
 //не забудь включить новую команду в help.txt (!)
     
   else{
-    return dataFile + "\n" + "command not found..." + "\n";
+    return exCom(dataFile,1) + "\n" + "неизвестная команда...\n>";
   }
 }
 
 //========================================================
 String takeDir(){
-  Serial.println("you pressed dir");
   String dirList = "";
     String fileList = "";
     File file = SD.open(myDir);
@@ -81,7 +84,33 @@ String takeDir(){
         }
     }
     file.close();
-    return "directory:\n" + dirList + "\n" + "files:\n" + fileList + "\n";
+    if (dirList == "") dirList += "------";
+    if (fileList == "") fileList += "------";
+    return "папки:\n" + dirList + "\n" + "файлы:\n" + fileList;
+}
+//======================================================
+String cd(String in){
+  if(exCom(in,2) == "") return "Введено недостаточно аргументов";
+  if(exCom(in,3) != "") return "Введено слишком много аргументов";
+  String subDir = exCom(in,2);
+  
+  if(subDir == ".."){
+      myDir = "/";
+      return "Переход в начало (/) прошел успешно";
+    }
+    File file = SD.open(myDir);
+    while(1){
+      File whereIsDir = file.openNextFile();
+      if(!whereIsDir) return "В папке '"+myDir+"' нет папки '"+subDir+"'";
+      String name(whereIsDir.name());
+      if(whereIsDir.isDirectory() == 1 && name == subDir){
+        myDir += "/" + subDir + "/";
+        return "Переход в папку '"+subDir+"' прошел успешно"+ 
+        "текущее положение: '"+myDir+"'";
+      }
+      whereIsDir.close();
+    }
+    file.close();
 }
 //======================================================
 void winOpen(){
