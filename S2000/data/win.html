@@ -87,7 +87,7 @@ dir - выводит все папки в текущей папке`;
 //------------- добавление отловленных команд ---------------
         if (data !== '') {
             if (data === 'clear') {
-                textArea.value = '';
+                textArea.value = '>';
                 return;
             }
             textArea.value += serverResponseText;
@@ -110,3 +110,4 @@ if (event.code === 'Enter') {
 </script>
 </body>
 </html>
+
