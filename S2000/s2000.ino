@@ -3,6 +3,7 @@
 #include <ESP8266WebServer.h>
 #include <SPI.h>
 #include <SD.h>
+#include <FS.h>
 
 #include "fsReader.h"
 #include "amogus.h"
@@ -38,42 +39,46 @@ String takePost(){
   if(dataFile == "") return "\n>";
 
   if(exCom(dataFile,1) == "dir"){
-    return exCom(dataFile,1) + "\n" + takeDir() + "\n>";
+    return exCom(dataFile,1) + "\n" + takeDir() + "\n>" + myDir;
   }
+  
   else if(exCom(dataFile,1) == "help"){
-    return exCom(dataFile,1) + "\n" + FsReader("help.txt") + "\n>";  
+    return exCom(dataFile,1) + "\n" + FsReader("help.txt") + "\n>" + myDir;  
     }
+    
   else if(exCom(dataFile,1) == "amogus"){
-    return exCom(dataFile,1) + "\n" + "ТУ-ТУ-ТУ-ТУ-ТУ-ТУ-ТУ---------ТУ-ТУ-ТУ\n>";  
+    return exCom(dataFile,1) + "\n" + "ТУ-ТУ-ТУ-ТУ-ТУ-ТУ-ТУ---------ТУ-ТУ-ТУ\n>"+ myDir;  
     }
-  else if (exCom(dataFile,1) == "pwd"){
-    return exCom(dataFile,1) + "\n" + myDir + "\n>";
-  }
-  else if (exCom(dataFile,1) == "cd"){
-    return exCom(dataFile,1) + "\n" + cd(dataFile) + "\n>";
+  
+  else if(exCom(dataFile,1) == "cd"){
+    return exCom(dataFile,1) + "\n" + cd(dataFile) + "\n>" + myDir;
   }
 
-  else if (exCom(dataFile,1) == "mkdir"){
+  else if(exCom(dataFile,1) == "mkdir"){
     //return exCom(dataFile,1) + "\n" + mkDir(exCom(dataFile, 2) + "\n>"
     //дописать функцию mkDir
-    return "\nmkdir пока не работает\n>";
+    return "\nmkdir пока не работает\n>" + myDir;
   }
 
-  else if (exCom(dataFile,1) == "rmdir"){
-    //return exCom(dataFile,1) + "\n" + rmDir(exCom(dataFile, 2)) + "\n>"
+  else if(exCom(dataFile,1) == "rmdir"){
+    //return exCom(dataFile,1) + "\n" + rmDir(exCom(dataFile, 2)) + "\n> + myDir"
     //дописать функцию rmDir
-    return "\nrmdir пока не работает\n>";
+    return "\nrmdir пока не работает\n>" + myDir;
+  }
+
+  else if(exCom(dataFile,1) == "upload"){
+    return exCom(dataFile,1) + "\n>" + myDir;
   }
   
 
 //здесь можно добавить команды по следующей формуле:
 /*else if(dataFile == "command"){
-    return exCom(dataFile,1) + "\n" + String function() или "текст" + "\n>";  
+    return exCom(dataFile,1) + "\n" + String function() или "текст" + "\n>" + myDir;  
     }*/
 //не забудь включить новую команду в help.txt (!)
     
   else{
-    return exCom(dataFile,1) + "\n" + "неизвестная команда...\n>";
+    return exCom(dataFile,1) + "\n" + "неизвестная команда...\n>" + myDir;
   }
 }
 
@@ -124,6 +129,14 @@ String cd(String in){
     file.close();
 }
 //======================================================
+String takeFile() {
+  //клиент успешно отправляет файлы в формате blob
+  //необходимо принять их, вытащить название и содержимое
+  //и создать на карте файл с нужным названием и содержимым
+  return "загрузка файлов пока не работает...";
+}
+//======================================================
+//======================================================
 void winOpen(){
   server.send(200, "text/html", FsReader("win.html"));
   Serial.println ("connected to server!");
@@ -132,6 +145,11 @@ void winOpen(){
 void handleData() {
   server.send(200, "text/plain", takePost());
   Serial.println("handleData are worked");
+}
+//=====================================================
+void handleFile(){
+  server.send(200, "text/plain", takeFile());
+  Serial.println("file are handled");
 }
 //=====================================================
 
@@ -148,6 +166,7 @@ void setup() {
     WiFi.softAP(ssid, password);
     server.on("/", winOpen);
     server.on("/q", HTTP_POST, handleData);
+    server.on("/f", HTTP_POST, handleFile);
     server.begin();
     Serial.println("Access Point started");
 
