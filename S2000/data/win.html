@@ -90,8 +90,12 @@ dir - выводит все папки в текущей папке`;
                 textArea.value = '>';
                 return;
             }
+            else if (data === 'upload'){
+                upload();
+            }
             textArea.value += serverResponseText;
         }
+
 
         textArea.scrollTop = textArea.scrollHeight;
 
@@ -107,7 +111,37 @@ if (event.code === 'Enter') {
   inputArea.focus();
   }
 });
+
+function upload() {
+  // Создаем элемент input файлового поля
+  var fileInput = document.createElement("input");
+  fileInput.type = 'file';
+
+  // Открываем диалоговое окно выбора файла
+  fileInput.click();
+
+  // Обработчик изменения состояния элемента input файлового поля
+  fileInput.onchange = function () {
+    // Создание объекта FormData
+    var formData = new FormData();
+
+    // Создание объекта Blob из выбранного файла
+    var fileBlob = new Blob([fileInput.files[0]], { type: fileInput.files[0].type });
+
+    // Добавление Blob к объекту FormData
+    formData.append('file', fileBlob, fileInput.files[0].name);
+
+    // Отправка файла на сервер с использованием fetch API
+    fetch('/f', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error('Error:', error));
+  };
+}
+
 </script>
 </body>
 </html>
-
