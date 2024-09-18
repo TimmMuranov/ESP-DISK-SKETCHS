@@ -37,8 +37,6 @@ String takePost(){
 
   if(dataFile == "") return "\n>";
 
-  if(dataFile == "clear") return ">";
-
   if(exCom(dataFile,1) == "dir"){
     return exCom(dataFile,1) + "\n" + takeDir() + "\n>";
   }
@@ -54,6 +52,19 @@ String takePost(){
   else if (exCom(dataFile,1) == "cd"){
     return exCom(dataFile,1) + "\n" + cd(dataFile) + "\n>";
   }
+
+  else if (exCom(dataFile,1) == "mkdir"){
+    //return exCom(dataFile,1) + "\n" + mkDir(exCom(dataFile, 2) + "\n>"
+    //дописать функцию mkDir
+    return "\nmkdir пока не работает\n>";
+  }
+
+  else if (exCom(dataFile,1) == "rmdir"){
+    //return exCom(dataFile,1) + "\n" + rmDir(exCom(dataFile, 2)) + "\n>"
+    //дописать функцию rmDir
+    return "\nrmdir пока не работает\n>";
+  }
+  
 
 //здесь можно добавить команды по следующей формуле:
 /*else if(dataFile == "command"){
