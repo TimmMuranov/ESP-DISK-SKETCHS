@@ -49,11 +49,6 @@
 
 <script>
 //==================== код страницы ==========================
-  var helpData =
-`здесь описание сервера.
-help - выводит этот текст.
-clear - очищает конcоль.
-dir - выводит все папки в текущей папке`;
 
   const textArea = document.getElementById('textArea');
   const inputArea = document.getElementById('inputArea');
@@ -85,16 +80,14 @@ dir - выводит все папки в текущей папке`;
         const serverResponseText = await response.text();
 
 //------------- добавление отловленных команд ---------------
-        if (data !== '') {
-            if (data === 'clear') {
-                textArea.value = '>';
-                return;
-            }
-            else if (data === 'upload'){
-                upload();
-            }
-            textArea.value += serverResponseText;
+        if (data === 'clear') {
+            textArea.value = '>';
+            return;
         }
+        else if (data === 'upload'){
+            upload();
+        }
+        textArea.value += serverResponseText;
 
 
         textArea.scrollTop = textArea.scrollHeight;
