@@ -39,15 +39,15 @@ String takePost(){
   if(dataFile == "") return "\n>";
 
   if(exCom(dataFile,1) == "dir"){
-    return exCom(dataFile,1) + "\n" + takeDir() + "\n>" + myDir;
+    return dataFile + "\n" + takeDir() + "\n>" + myDir;
   }
   
   else if(exCom(dataFile,1) == "help"){
-    return exCom(dataFile,1) + "\n" + FsReader("help.txt") + "\n>" + myDir;  
+    return dataFile + "\n" + FsReader("help.txt") + "\n>" + myDir;  
     }
     
   else if(exCom(dataFile,1) == "amogus"){
-    return exCom(dataFile,1) + "\n" + "ТУ-ТУ-ТУ-ТУ-ТУ-ТУ-ТУ---------ТУ-ТУ-ТУ\n>"+ myDir;  
+    return dataFile + "\n" + "ТУ-ТУ-ТУ-ТУ-ТУ-ТУ-ТУ---------ТУ-ТУ-ТУ\n>"+ myDir;  
     }
   
   else if(exCom(dataFile,1) == "cd"){
@@ -55,15 +55,15 @@ String takePost(){
   }
 
   else if(exCom(dataFile,1) == "mkdir"){
-    //return exCom(dataFile,1) + "\n" + mkDir(exCom(dataFile, 2) + "\n>"
+    return dataFile + "\n" + mkDir(exCom(dataFile, 2)) + "\n>";
     //дописать функцию mkDir
-    return "\nmkdir пока не работает\n>" + myDir;
+    //return "\nmkdir пока не работает\n>" + myDir;
   }
 
   else if(exCom(dataFile,1) == "rmdir"){
-    //return exCom(dataFile,1) + "\n" + rmDir(exCom(dataFile, 2)) + "\n> + myDir"
+    return dataFile + "\n" + rmDir(exCom(dataFile, 2)) + "\n>" + myDir;
     //дописать функцию rmDir
-    return "\nrmdir пока не работает\n>" + myDir;
+    //return "\nrmdir пока не работает\n>" + myDir;
   }
 
   else if(exCom(dataFile,1) == "upload"){
@@ -92,9 +92,11 @@ String takeDir(){
             File whoIs = file.openNextFile();
             if (!whoIs) break;
             if (whoIs.isDirectory()) {
-                dirList += whoIs.name() + ' ';
+                String str(whoIs.name());
+                dirList += str + ' ';
             } else if (!whoIs.isDirectory()) {
-                fileList += whoIs.name() + ' ';
+                String str(whoIs.name());
+                fileList += str + ' ';
             }
             whoIs.close();
         }
@@ -120,13 +122,35 @@ String cd(String in){
       if(!whereIsDir) return "В папке '"+myDir+"' нет папки '"+subDir+"'";
       String name(whereIsDir.name());
       if(whereIsDir.isDirectory() == 1 && name == subDir){
-        myDir += "/" + subDir + "/";
+        myDir += subDir + "/";
         return "Переход в папку '"+subDir+"' прошел успешно"+ 
         "текущее положение: '"+myDir+"'";
       }
       whereIsDir.close();
     }
     file.close();
+}
+//=====================================================
+String mkDir(String dir){
+  File file = SD.open(myDir + "/" + dir);
+  if(!file){
+    if (SD.mkdir(myDir + "/" + dir)){
+      return "Создана папка '" + dir + "' в папке '" + myDir + "'";
+    }
+    else return "Во время создания папки произошла ошибка...";
+  }
+  else return "Папка '" + dir + "' уже существует в папке '" + myDir + "'";
+}
+//======================================================
+String rmDir(String dir){
+  File file = SD.open(myDir + "/" + dir);
+  if(file){
+    if (SD.rmdir(myDir + "/" + dir)){
+      return "Папка " + dir + " удалена.";
+    }
+    else return "Во время удаления произошла ошибка...";
+  }
+  else return "Папки '" + dir + "' нет в '" + myDir + "'";
 }
 //======================================================
 String takeFile() {
