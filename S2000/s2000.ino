@@ -145,6 +145,8 @@ String mkDir(String dir){
 String rmDir(String dir){
   File file = SD.open(myDir + "/" + dir);
   if(file){
+    File isFiles = file.openNextFile();
+    if (isFiles) return "Удаляемая папка должна быть пустой.";
     if (SD.rmdir(myDir + "/" + dir)){
       return "Папка " + dir + " удалена.";
     }
