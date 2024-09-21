@@ -53,7 +53,7 @@
   const textArea = document.getElementById('textArea');
   const inputArea = document.getElementById('inputArea');
   const submitButton = document.getElementById('submitButton');
-
+  textArea.value = '>';
   submitButton.addEventListener('click', async () => {
     const data = inputArea.value;
     inputArea.value = '';
@@ -106,33 +106,39 @@ if (event.code === 'Enter') {
 });
 
 function upload() {
-  // Создаем элемент input файлового поля
-  var fileInput = document.createElement("input");
-  fileInput.type = 'file';
+    // Создаем элемент input файлового поля
+    var fileInput = document.createElement("input");
+    fileInput.type = 'file';
 
-  // Открываем диалоговое окно выбора файла
-  fileInput.click();
+    fileInput.click();
 
-  // Обработчик изменения состояния элемента input файлового поля
-  fileInput.onchange = function () {
-    // Создание объекта FormData
-    var formData = new FormData();
+    fileInput.addEventListener('change', function () {
+        // Проверяем, что файл выбран
+        if (fileInput.files.length > 0) {
+            var formData = new FormData();
 
-    // Создание объекта Blob из выбранного файла
-    var fileBlob = new Blob([fileInput.files[0]], { type: fileInput.files[0].type });
+            // Добавление выбранного файла к объекту FormData
+            formData.append('file', fileInput.files[0]);
 
-    // Добавление Blob к объекту FormData
-    formData.append('file', fileBlob, fileInput.files[0].name);
-
-    // Отправка файла на сервер с использованием fetch API
-    fetch('/f', {
-      method: 'POST',
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error('Error:', error));
-  };
+            // Отправка файла на сервер с использованием fetch API
+            fetch('/f', {
+                method: 'POST',
+                body: formData // Здесь не нужно указывать заголовки для Content-Type
+            })
+            .then(response => {
+                // Проверка на успешный ответ
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                // Пытаемся преобразовать ответ в JSON
+                return response.json();
+            })
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+        } else {
+            console.error('No file selected');
+        }
+    });
 }
 
 </script>
