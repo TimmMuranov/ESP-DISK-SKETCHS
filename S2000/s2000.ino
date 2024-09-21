@@ -36,7 +36,7 @@ String takePost(){
   Serial.println(dataFile);
   command = dataFile;
 
-  if(dataFile == "") return "\n>";
+  if(dataFile == "") return "\n>" + myDir;
 
   if(exCom(dataFile,1) == "dir"){
     return dataFile + "\n" + takeDir() + "\n>" + myDir;
@@ -51,23 +51,19 @@ String takePost(){
     }
   
   else if(exCom(dataFile,1) == "cd"){
-    return exCom(dataFile,1) + "\n" + cd(dataFile) + "\n>" + myDir;
+    return dataFile + "\n" + cd(dataFile) + "\n>" + myDir;
   }
 
   else if(exCom(dataFile,1) == "mkdir"){
     return dataFile + "\n" + mkDir(exCom(dataFile, 2)) + "\n>";
-    //дописать функцию mkDir
-    //return "\nmkdir пока не работает\n>" + myDir;
   }
 
   else if(exCom(dataFile,1) == "rmdir"){
     return dataFile + "\n" + rmDir(exCom(dataFile, 2)) + "\n>" + myDir;
-    //дописать функцию rmDir
-    //return "\nrmdir пока не работает\n>" + myDir;
   }
 
   else if(exCom(dataFile,1) == "upload"){
-    return exCom(dataFile,1) + "\n>" + myDir;
+    return dataFile + "\n>" + myDir;
   }
   
 
@@ -124,7 +120,7 @@ String cd(String in){
       if(whereIsDir.isDirectory() == 1 && name == subDir){
         myDir += subDir + "/";
         return "Переход в папку '"+subDir+"' прошел успешно"+ 
-        "текущее положение: '"+myDir+"'";
+        "\nтекущее положение: '"+myDir+"'";
       }
       whereIsDir.close();
     }
@@ -140,6 +136,7 @@ String mkDir(String dir){
     else return "Во время создания папки произошла ошибка...";
   }
   else return "Папка '" + dir + "' уже существует в папке '" + myDir + "'";
+  file.close();
 }
 //======================================================
 String rmDir(String dir){
@@ -156,10 +153,29 @@ String rmDir(String dir){
 }
 //======================================================
 String takeFile() {
-  //клиент успешно отправляет файлы в формате blob
-  //необходимо принять их, вытащить название и содержимое
-  //и создать на карте файл с нужным названием и содержимым
-  return "загрузка файлов пока не работает...";
+    HTTPMethod method = server.method();
+    if (method != HTTP_POST) {
+        return "Invalid HTTP Method";
+    }
+
+    // Считаем количество заголовков
+    if (server.hasArg("plain")) {
+        String header = server.header("Content-Type");
+        
+        // Проверяем тип контента
+        if (header == "image/png") {
+            return "это картинка png";
+        } else if (header == "text/plain") {
+            return "это текст";
+        } else if (header.startsWith("image/")) {
+            return "это изображение другого типа: " + header;
+        } else {
+            return "неизвестный формат: " + header;
+        }
+    } else {
+        return "Нет файла в запросе";
+    }
+    //я сдаюсь.......
 }
 //======================================================
 //======================================================
@@ -190,6 +206,7 @@ void setup() {
     
     WiFi.mode(WIFI_AP);
     WiFi.softAP(ssid, password);
+    
     server.on("/", winOpen);
     server.on("/q", HTTP_POST, handleData);
     server.on("/f", HTTP_POST, handleFile);
@@ -202,7 +219,6 @@ void setup() {
 
 void loop() {
     server.handleClient();
-    
     if(command == "amogus"){
       amogus();
       command = "";
