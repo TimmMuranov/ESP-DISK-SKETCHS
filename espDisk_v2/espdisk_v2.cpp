@@ -7,6 +7,7 @@
 #include <FS.h>
 
 int main (){
+//======= настройки сервера ========
   Serial.begin(115200);
 
     while(!Serial){}//ждем serial
@@ -26,9 +27,22 @@ int main (){
     pinMode(2, OUTPUT);
     digitalWrite(2, HIGH);
 
+//===== основной цикл программы =====
+
   while(1){
+    server.handleClient();
     
   }
+//============= функции =============
+
+void handleData() {
+  server.send(200, "text/plain", takePost());
+  Serial.println("handleData are worked");
+}
+
+String takePost(){
+  
+}
 
 return 0;
 }
