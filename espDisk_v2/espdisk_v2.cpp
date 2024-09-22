@@ -35,13 +35,31 @@ int main (){
   }
 //============= функции =============
 
+//_________ функция начала __________
+//срабатывает при запуске сервера
+
+//__________ функция запроса ________
 void handleData() {
   server.send(200, "text/plain", takePost());
   Serial.println("handleData are worked");
 }
 
 String takePost(){
-  
+  String data = server.arg("plain");
+  if (data == "") {
+    Serial.println("No data received.");
+  }
+
+  // Parse the JSON data
+  StaticJsonDocument<100> doc;
+  DeserializationError error = deserializeJson(doc, data);
+  if (error) {
+    Serial.println("Failed to parse JSON data");
+    return "failed to parse JSON";
+  }
+  String dataFile = doc["data"];
+  Serial.println(dataFile);
+  command = dataFile;
 }
 
 return 0;
