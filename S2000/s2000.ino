@@ -174,7 +174,7 @@ String takeFile() {
    return "запрос от сервера получен!";    
 }
 //======================================================
-void saveToVector(std::vector<unsigned char>& data) {
+void saveToVector(vector <unsigned char>& data) {
    //должна сохранять файл на сд карте
 }
 //======================================================
