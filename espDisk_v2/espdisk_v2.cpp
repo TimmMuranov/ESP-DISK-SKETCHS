@@ -6,8 +6,11 @@
 #include <SD.h>
 #include <FS.h>
 
-int main (){
+#include "amogus.h"
+#include "fsReader.h"
+
 //======= настройки сервера ========
+int main (){
   Serial.begin(115200);
 
     while(!Serial){}//ждем serial
@@ -31,18 +34,30 @@ int main (){
 
   while(1){
     server.handleClient();
-    
+    if (command == "amogus"){
+      amogus();
+      command = "";
+    }
   }
 //============= функции =============
 
 //_________ функция начала __________
 //срабатывает при запуске сервера
+void winOpen(){
+  server.send(200, "text/html", FsReader("win.html"));
+  Serial.println ("connected to server!");
+}
 
 //__________ функция запроса ________
+//срабатывает при запросе
+//и сразу отправляет ответ
+
 void handleData() {
   server.send(200, "text/plain", takePost());
   Serial.println("handleData are worked");
 }
+
+//_____ функция обработки запроса _____
 
 String takePost(){
   String data = server.arg("plain");
@@ -50,7 +65,6 @@ String takePost(){
     Serial.println("No data received.");
   }
 
-  // Parse the JSON data
   StaticJsonDocument<100> doc;
   DeserializationError error = deserializeJson(doc, data);
   if (error) {
@@ -61,6 +75,7 @@ String takePost(){
   Serial.println(dataFile);
   command = dataFile;
 }
+//===================================≠
 
 return 0;
 }
