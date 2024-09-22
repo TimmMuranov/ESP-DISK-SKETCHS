@@ -1,25 +1,36 @@
-        .form-container {
-            width: 400px;
-            margin: auto;
-            overflow: hidden;
-        }
-        .input-area {
-            width: 100%;
-            height: 100px;
-            box-sizing: border-box;
-            resize: none;
-            outline: none;
-            border: 1px solid #ccc;
-            padding: 10px;
-        }
-        .btn-submit {
-            width: 100%;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-submit:hover {
-            background-color: #43a047;
-        }
+.form-container {
+    width: 400px;
+    margin: auto;
+    overflow: hidden;
+    }
+.input-area {
+    width: 100%;
+    height: 100px;
+    }
+.btn-submit {
+    margin: auto;
+    width: 50%;
+    background-color: #4CAF50;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    }
+.btn-submit:hover {
+    background-color: #43a047;
+    }
+.btn-creatF {
+    margin: auto;
+    width: 25%;
+    background-color: Gray;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.btn-creatD {
+    margin: auto;
+    width: 25%;
+    background-color: Blue;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
