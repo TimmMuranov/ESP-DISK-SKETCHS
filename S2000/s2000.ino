@@ -4,6 +4,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <FS.h>
+#include <vector>
 
 #include "fsReader.h"
 #include "amogus.h"
@@ -157,27 +158,25 @@ String takeFile() {
     if (method != HTTP_POST) {
         return "Invalid HTTP Method";
     }
-
-    // Считаем количество заголовков
-    if (server.hasArg("plain")) {
-        String header = server.header("Content-Type");
-        
-        // Проверяем тип контента
-        if (header == "image/png") {
-            return "это картинка png";
-        } else if (header == "text/plain") {
-            return "это текст";
-        } else if (header.startsWith("image/")) {
-            return "это изображение другого типа: " + header;
-        } else {
-            return "неизвестный формат: " + header;
-        }
-    } else {
-        return "Нет файла в запросе";
+    
+    // Получаем тело POST-запроса
+    String body = server.arg(1);
+    unsigned long len = body.length();
+    
+    // Преобразуем строку в массив байт
+    vector <unsigned char> content(len);
+    for (int i = 0; i < len; ++i) {
+        content[i] = body.charAt(i);
     }
-    //я сдаюсь.......
+    
+    saveToVector(content);
+    
+   return "запрос от сервера получен!";    
 }
 //======================================================
+void saveToVector(std::vector<unsigned char>& data) {
+   //должна сохранять файл на сд карте
+}
 //======================================================
 void winOpen(){
   server.send(200, "text/html", FsReader("win.html"));
