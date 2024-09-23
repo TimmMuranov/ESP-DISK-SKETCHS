@@ -9,8 +9,8 @@
 #include "fsReader.h"
 #include "creatBut.h"
 
-const char *ssid = "TimsServer"; // Имя вашей Wi-Fi сети
-const char *password = "12345678"; // Пароль от вашей Wi-Fi сети
+const char *ssid="TimsServer";//имя wifi
+const char *password ="12345678";//passwd
 
 ESP8266WebServer server(80);
 
@@ -29,7 +29,8 @@ String page =
   FsReader("style.css") +
   "</style>" +
   "<div class='form-container'>"
-  "<h2>Welcome to the ESP8266 server!</h2>"
+  "<h2>Welcome to the ESP8266 server!</h2>
+<p><a>Информация</a><p>"
   "<textarea rows='10' cols='50' id='inputArea'></textarea>"
   "<button class='btn-submit' id='submitButton'>Сохранить</button>"
   "<button class='btn-creatF' id='creatFile'>Создать файл</button>"
@@ -40,7 +41,7 @@ String page =
   FsReader("script.js") +
   "</script></body></html>";
 
-/////////////////// настройки сервера ///////////////
+////////////// НАСТРОЙКИ /////////////
 void setup (){
   Serial.begin(115200);
 
@@ -64,7 +65,7 @@ void setup (){
   digitalWrite(2, HIGH);
 }
 
-//===== основной цикл программы =====
+//======= основной цикл программы =======
 
 void loop(){
     server.handleClient();
@@ -73,27 +74,28 @@ void loop(){
       command = "";
     }
   }
-/////////////////// функции ////////////////////
 
-//============ функция начала ===========
+//////////////// ФУНКЦИИ //////////////
+
+//========== Функция начала ===========
 //срабатывает при запуске сервера
 void winOpen(){
   server.send(200, "text/html", page);
   Serial.println ("connected to server!");
 }
 
-//=========== функции запроса =============
+//========= Обработка текста ==========
 //срабатывает при запросе
 //и сразу отправляет ответ
 
 void handleData() {
-  server.send(200, "text/plain", takePost());
+  server.send(200, "text/plain", takePostText());
   Serial.println("handleData are worked");
 }
 
-//_____ функция обработки запроса _____
+//____ Обработка текстового запроса ____
 
-String takePost(){
+String takePostText(){
   String data = server.arg("plain");
   if (data == "") {
     Serial.println("No data received.");
@@ -109,13 +111,15 @@ String takePost(){
   Serial.println(dataFile);
   return "запрос получен: " + dataFile;
 }
-//========== нажатие на создание файла ============
+
+//===== нажатие на создание файла =====
 
 void handleFile(){
   server.send(200, "text/plain", takePostFile());
   Serial.println("вы нажали на создание файла");
 }
-//___________ обработка нажатия ________________
+
+//_________ Обработка нажатия _________
 
 String takePostFile(){
   String data = server.arg("plain");
@@ -131,16 +135,16 @@ String takePostFile(){
   }
   String dataFile = doc["data"];
   Serial.println(dataFile);
-  return "вы нажали на кнопку: " + dataFile;
+  return "вы нажали: " + dataFile;
 }
 
-//========= и на создание директории ================
+//==== На создание директории ======
 
 void handleDir(){
   server.send(200, "text/plain", takePostDir());
   Serial.println("вы нажали на создание директории");
 }
-//___________ обработка нажатия ________________
+//________ обработка нажатия _________
 
 String takePostDir(){
   String data = server.arg("plain");
@@ -158,4 +162,4 @@ String takePostDir(){
   Serial.println(dataFile);
   return "вы нажали на кнопку: " + dataFile;
 }
-//===========================================
+//=====================================
