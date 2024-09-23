@@ -32,8 +32,8 @@ String page =
   "<div class='form-container'>"
   "<h2>Welcome to ESP8266 server!</h2>
   "<p><a id='about'>Об устройстве</a><p>"
-  "<h3>Открытый файл: " +
-  myDir + openedFile + "</h3><hr>"
+  "<hr><h3>Открытый файл: " +
+  myDir + openedFile + "</h3>"
   "<textarea rows='10' cols='50' id='inputArea'></textarea>"
   "<button class='btn-submit' id='submitButton'>Сохранить</button>"
   "<button class='btn-creatF' id='creatFile'>Создать файл</button>"
