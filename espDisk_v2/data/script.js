@@ -2,6 +2,10 @@ const inputArea = document.getElementById('inputArea');
 const submitButton = document.getElementById('submitButton');
 const creatF = document.getElementById('creatFile');
 const creatD = document.getElementById('creatDir');
+const toHome = document.getElementById('Home');
+
+const buttons = document.querySelectorAll('button');
+
 
 submitButton.addEventListener('click', async () => {
 const data = inputArea.value;
@@ -26,14 +30,13 @@ try {
         // Получаем ответ от сервера
         const serverResponseText = await response.text();
         alert(serverResponseText);
-//------------- добавление отловленных команд ---------------
     } catch (error) {
         console.error('Error sending data: ', error);
     }
 });
 
 creatF.addEventListener('click', async () => {
-const data = "creatFile";
+const data = prompt('Введите имя нового файла');
 try {
         const response = await fetch('/bf', {
             method: 'POST',
@@ -51,10 +54,11 @@ try {
     } catch (error) {
         console.error('Error sending data: ', error);
     }
+    location.reload();
 });
 
 creatD.addEventListener('click', async () => {
-const data = "creatDir";
+const data = prompt('Введите имя новой директории');
 try {
         const response = await fetch('/bd', {
             method: 'POST',
@@ -72,4 +76,42 @@ try {
     } catch (error) {
         console.error('Error sending data: ', error);
     }
+    location.reload();
 });
+
+toHome.addEventListener('click', async () => {
+    const data = "toHome";
+try {
+        const response = await fetch('/h', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ data })
+        });
+        if (!response.ok) {
+            console.log('Ошибка сервера: ' + response.statusText);
+            return;
+        }
+        const serverResponseText = await response.text();
+        alert(serverResponseText);
+    } catch (error) {
+        console.error('Error sending data: ', error);
+    }
+    location.reload();
+});
+
+        buttons.forEach((button) => {
+            if (button.getAttribute('name') === 'dir') {
+                button.addEventListener('click', () => {
+                    const dirName = button.innerHTML;
+                    alert(dirName);
+                });
+            }
+            else if (button.getAttribute('name') === 'file'){
+                button.addEventListener('click', () => {
+                    const dirName = button.innerHTML;
+                    alert('а это файл ' + dirName);
+                });
+            }
+        });
