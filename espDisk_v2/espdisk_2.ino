@@ -137,17 +137,33 @@ String takePostFile(){
     return "failed to parse JSON";
   }
   String dataFile = doc["data"];
-  Serial.println(dataFile);
-  return "вы нажали: " + dataFile;
+  
+  File file = SD.open(myDir);
+  if(file.available(dataFile)){
+    File isDir = file.open(dataFile);
+    if(!isDir.isDirectory){
+      isDir.close();
+      file.close();
+      return "Такой файл уже существует";
+      }
+    isDir.close();
+    }
+  if(file.open(dataFile)){
+    File f = file.open(dataFile);
+    f.print("ваш текст");
+    f.cllose();
+    file.close(); 
+    return "файл создан успешно";
+  }
 }
 
 //==== На создание директории ======
 
 void handleDir(){
   server.send(200, "text/plain", takePostDir());
-  Serial.println("вы нажали на создание директории");
+  Serial.println("Вы нажали на создание директории");
 }
-//________ обработка нажатия _________
+//________ Обработка нажатия _________
 
 String takePostDir(){
   String data = server.arg("plain");
@@ -158,11 +174,23 @@ String takePostDir(){
   StaticJsonDocument<100> doc;
   DeserializationError error = deserializeJson(doc, data);
   if (error) {
-    Serial.println("Failed to parse JSON data");
+    Serial.println("не удалось парсить");
     return "failed to parse JSON";
   }
   String dataFile = doc["data"];
-  Serial.println(dataFile);
-  return "вы нажали на кнопку: " + dataFile;
+  
+  File file = SD.open(myDir);
+  File isDir = file.open(dataFile);
+  if (isDir){
+    if (isDir.isDirectory){
+      isDir.close();
+      file.close();
+      return "Эта директория уже есть";
+    }
+  }
+  file.mkdir(dataFile);
+  isDir.close(); 
+  file.close();
+  return "Создана директория: "+dataFile;
 }
 //=====================================
