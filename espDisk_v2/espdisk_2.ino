@@ -19,30 +19,6 @@ String openedFile = "";
 String command = "";
 
 String buttons = "";
-String page =
-  "<!DOCTYPE html>"
-  "<html lang='ru'>"
-  "<head>"
-  "<meta charset='UTF-8'>"
-  "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
-  "<title>Servak</title>"
-  "<style>" +
-  FsReader("style.css") +
-  "</style>" +
-  "<div class='form-container'>"
-  "<h2>Welcome to ESP8266 server!</h2>
-  "<p><a id='about'>Об устройстве</a><p>"
-  "<hr><h3>Открытый файл: " +
-  myDir + openedFile + "</h3>"
-  "<textarea rows='10' cols='50' id='inputArea'></textarea>"
-  "<button class='btn-submit' id='submitButton'>Сохранить</button>"
-  "<button class='btn-creatF' id='creatFile'>Создать файл</button>"
-  "<button class='btn-creatD' id='creatDir'>Создать папку</button>"
-  "</div><hr>" +
-  creatBut(myDir) +
-  "<script>" +
-  FsReader("script.js") +
-  "</script></body></html>";
 
 ////////////// НАСТРОЙКИ /////////////
 void setup (){
@@ -61,6 +37,7 @@ void setup (){
   server.on("/q", HTTP_POST, handleData);
   server.on("/bf", HTTP_POST, handleFile);
   server.on("/bd", HTTP_POST, handleDir);
+  server.on("/h", HTTP_POST, toHome);
   server.begin();
   Serial.println("Access Point started");
 
@@ -83,7 +60,7 @@ void loop(){
 //========== Функция начала ===========
 //срабатывает при запуске сервера
 void winOpen(){
-  server.send(200, "text/html", page);
+  server.send(200, "text/html", getPage());
   Serial.println ("connected to server!");
 }
 
@@ -107,8 +84,8 @@ String takePostText(){
   StaticJsonDocument<100> doc;
   DeserializationError error = deserializeJson(doc, data);
   if (error) {
-    Serial.println("Failed to parse JSON data");
-    return "failed to parse JSON";
+    Serial.println("Не получилось парсить инфу");
+    return "Не получилось парсить";
   }
   String dataFile = doc["data"];
   Serial.println(dataFile);
@@ -119,44 +96,40 @@ String takePostText(){
 
 void handleFile(){
   server.send(200, "text/plain", takePostFile());
-  Serial.println("вы нажали на создание файла");
+  Serial.println("Вы нажали на создание файла");
 }
 
 //_________ Обработка нажатия _________
 
-String takePostFile(){
+String takePostFile() {
   String data = server.arg("plain");
   if (data == "") {
-    Serial.println("No data received.");
+    return "Пустой запрос";
+    Serial.println("Нет отправляемых данных.");
   }
-
   StaticJsonDocument<100> doc;
   DeserializationError error = deserializeJson(doc, data);
   if (error) {
-    Serial.println("Failed to parse JSON data");
-    return "failed to parse JSON";
+    Serial.println("Не получилось спарсить...");
+    return "Не получилось парсить";
   }
   String dataFile = doc["data"];
   
-  File file = SD.open(myDir);
-  if(file.available(dataFile)){
-    File isDir = file.open(dataFile);
-    if(!isDir.isDirectory){
-      isDir.close();
-      file.close();
-      return "Такой файл уже существует";
-      }
-    isDir.close();
-    }
-  if(file.open(dataFile)){
-    File f = file.open(dataFile);
-    f.print("ваш текст");
-    f.cllose();
-    file.close(); 
-    return "файл создан успешно";
+  if (dataFile == "") {
+    return "Вы не ввели название файла";
   }
+  
+  if (!SD.exists(myDir + dataFile)) {
+    File f1 = SD.open(myDir + dataFile, FILE_WRITE);
+    if (!f1) return "Не удалось создать файл";
+    f1.write("Введите текст сюда...");
+    f1.close();
+    return "Создан файл: " + dataFile;
+    }
+  else
+    return dataFile + " - Этот файл/директория уже существует";
+  return "Во время создания файла что-то пошло не так";
 }
-
 //==== На создание директории ======
 
 void handleDir(){
@@ -168,7 +141,8 @@ void handleDir(){
 String takePostDir(){
   String data = server.arg("plain");
   if (data == "") {
-    Serial.println("No data received.");
+    return "Пустой запрос";
+    Serial.println("Нет данных.");
   }
 
   StaticJsonDocument<100> doc;
@@ -178,19 +152,56 @@ String takePostDir(){
     return "failed to parse JSON";
   }
   String dataFile = doc["data"];
+  if (dataFile == "") return "Вы не ввели название директории";
   
   File file = SD.open(myDir);
-  File isDir = file.open(dataFile);
-  if (isDir){
-    if (isDir.isDirectory){
-      isDir.close();
+  if (SD.exists(myDir + dataFile)){
+    File f = SD.open(myDir + dataFile);
+    if (f.isDirectory()){
+      f.close();
       file.close();
-      return "Эта директория уже есть";
+      return "Такая директория уже есть";
     }
+    f.close();
   }
-  file.mkdir(dataFile);
-  isDir.close(); 
-  file.close();
-  return "Создана директория: "+dataFile;
+  if (SD.mkdir(myDir + dataFile)){
+    file.close();
+    return "Создана директория: " + dataFile;
+  }
+  return "Во время создания директории что-то пошло не так...";
+}
+
+//=====================================
+void toHome(){
+  server.send(200, "text/plain", "Вы вернулись домой");
+  myDir = "/";
+  Serial.println("вы вернулись домой");
 }
 //=====================================
+String getPage(){
+  String page =
+  "<!DOCTYPE html>"
+  "<html lang='ru'>"
+  "<head>"
+  "<meta charset='UTF-8'>"
+  "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
+  "<title>Servak</title>"
+  "<style>" +
+  FsReader("style.css") +
+  "</style>" +
+  "<div class='form-container'>"
+  "<h2>Welcome to ESP8266 server!</h2>"
+  "<p><a id='about'>Об устройстве</a><p>"
+  "<hr><h3>Открытый файл: " +
+  myDir + openedFile + "</h3>"
+  "<textarea rows='10' cols='50' id='inputArea'></textarea>"
+  "<button class='btn-submit' id='submitButton'>Сохранить</button>"
+  "<button class='btn-creatF' id='creatFile'>Создать файл</button>"
+  "<button class='btn-creatD' id='creatDir'>Создать папку</button>"
+  "</div><hr>" +
+  creatBut(myDir) +
+  "<script>" +
+  FsReader("script.js") +
+  "</script></body></html>";
+  return page;
+}
