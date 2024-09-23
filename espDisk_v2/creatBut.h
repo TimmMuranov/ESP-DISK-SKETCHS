@@ -8,25 +8,27 @@ String creatBut(String myDirectory){
   if(isDir.isDirectory()){
     String str(isDir.name());
     buttons +=
-    "<button style='background-color:Blue'>" +
+    "<button style='background-color:Blue' name = 'dir' id='" + str + "'>" +
      str +
     "</button><p>";
     }
-  isDir.close();
   }
+  file.rewindDirectory();
   while(1){
   File f = file.openNextFile();
   if(!f) break;
   if(!f.isDirectory()){
     String str(f.name());
     buttons +=
-    "<button style='background-color:Gray'>" +
+    "<button style='background-color:Gray' name = 'file' id='" + str + "'>" +
     str +
     "</button><p>";
     }
   f.close();
   }
-  Serial.println("создание кнопок успешно");
+  buttons += 
+  "<hr><button id='Home' style='background-color:red'>Вернуться</button>";
+  Serial.println("создание кнопок выполнено");
   file.close();
   return buttons;
 }
