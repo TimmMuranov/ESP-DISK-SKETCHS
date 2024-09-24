@@ -103,15 +103,47 @@ try {
 
         buttons.forEach((button) => {
             if (button.getAttribute('name') === 'dir') {
-                button.addEventListener('click', () => {
-                    const dirName = button.innerHTML;
-                    alert(dirName);
+                const fileName = button.innerHTML;
+                button.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/f', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ fileName })
+                        });
+                        if (!response.ok) {
+                            console.log('Ошибка: '+response.statusText);
+                            return;
+                        }
+                        const serverResponseText = await response.text();
+                        alert(serverResponseText);
+                    } catch (error) {
+                    console.error('Error sending data: ', error);
+                    }
                 });
             }
             else if (button.getAttribute('name') === 'file'){
-                button.addEventListener('click', () => {
-                    const dirName = button.innerHTML;
-                    alert('а это файл ' + dirName);
+                const fileName = button.innerHTML;
+                button.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/f', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ fileName })
+                        });
+                        if (!response.ok) {
+                            console.log('Ошибка: '+response.statusText);
+                            return;
+                        }
+                        const serverResponseText = await response.text();
+                        alert(serverResponseText);
+                    } catch (error) {
+                    console.error('Error sending data: ', error);
+                    }
                 });
             }
         });
