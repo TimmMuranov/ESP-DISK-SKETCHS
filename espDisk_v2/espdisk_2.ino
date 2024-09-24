@@ -38,6 +38,7 @@ void setup (){
   server.on("/bf", HTTP_POST, handleFile);
   server.on("/bd", HTTP_POST, handleDir);
   server.on("/h", HTTP_POST, toHome);
+  server.on("/f", HTTP_POST, openFile);
   server.begin();
   Serial.println("Access Point started");
 
@@ -176,6 +177,46 @@ void toHome(){
   server.send(200, "text/plain", "Вы вернулись домой");
   myDir = "/";
   Serial.println("вы вернулись домой");
+}
+//=====================================
+void openFile(){
+  server.send(200, "text/plain", openFileFunc());
+}
+//____________________________________
+String openFileFunc(){
+  String data = server.arg("plain");
+  if (data == "") {
+    return "Пустой запрос";
+    Serial.println("Нет данных.");
+  }
+
+  StaticJsonDocument<100> doc;
+  DeserializationError error = deserializeJson(doc, data);
+  if (error) {
+    Serial.println("не удалось парсить");
+    return "failed to parse JSON";
+  }
+  String dataFile = doc["fileName"];
+  if (dataFile == "") return "Эта кнопка пустая. Хз, как так...";
+  Serial.println(dataFile);
+  if(SD.exists(myDir + dataFile)) return "Этого файла нет, хз как так";
+  File file = SD.open(myDir + dataFile);
+  if (file.isDirectory()){
+    myDir += dataFile;
+    Serial.println ("Вы перешли в директорию " + dataFile);
+    return "Вы перешли в директорию " + dataFile;
+  }
+  String dataInFile = "";
+  uint8_t *buffer = (uint8_t *) malloc(256);
+  int avail = file.available();
+  while (avail > 0) {
+    if (avail > 256) avail = 256;
+    dataInFile += file.read(buffer, avail);
+    avail = file.available();
+  }
+file.close();
+Serial.println(dataFile);
+return dataInFile;
 }
 //=====================================
 String getPage(){
