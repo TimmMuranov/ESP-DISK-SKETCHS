@@ -8,6 +8,7 @@
 #include "amogus.h"
 #include "fsReader.h"
 #include "creatBut.h"
+#include "sdReader.h"
 
 const char *ssid="TimsServer";//имя wifi
 const char *password ="12345678";//passwd
@@ -90,7 +91,16 @@ String takePostText(){
   }
   String dataFile = doc["data"];
   Serial.println(dataFile);
-  return "запрос получен: " + dataFile;
+  if(openedFile != ""){
+    if (SD.exists(myDir + openedFile)){
+      File file = SD.open(myDir + openedFile);
+      file.print(dataFile);
+      file.close();
+      return "Текст записан в файл " + openedFile;
+    }
+    return "Вы не открыли ни одного файла. Записать текст некуда :'(";
+  }
+  return "запрос получен: " + dataFile + ", но запись не удалась...";
 }
 
 //===== нажатие на создание файла =====
@@ -189,7 +199,6 @@ String openFileFunc(){
     return "Пустой запрос";
     Serial.println("Нет данных.");
   }
-
   StaticJsonDocument<100> doc;
   DeserializationError error = deserializeJson(doc, data);
   if (error) {
@@ -198,25 +207,18 @@ String openFileFunc(){
   }
   String dataFile = doc["fileName"];
   if (dataFile == "") return "Эта кнопка пустая. Хз, как так...";
-  Serial.println(dataFile);
-  if(SD.exists(myDir + dataFile)) return "Этого файла нет, хз как так";
+  if(!SD.exists(myDir + dataFile)) return "Этого файла нет, хз как так";
+  
   File file = SD.open(myDir + dataFile);
   if (file.isDirectory()){
-    myDir += dataFile;
+    myDir += dataFile + "/";
     Serial.println ("Вы перешли в директорию " + dataFile);
-    return "Вы перешли в директорию " + dataFile;
+    return "";
   }
-  String dataInFile = "";
-  uint8_t *buffer = (uint8_t *) malloc(256);
-  int avail = file.available();
-  while (avail > 0) {
-    if (avail > 256) avail = 256;
-    dataInFile += file.read(buffer, avail);
-    avail = file.available();
-  }
-file.close();
-Serial.println(dataFile);
-return dataInFile;
+  openedFile = dataFile;
+  String dataInFile(sdReader(myDir, dataFile));
+  Serial.println(dataInFile);
+  return dataInFile;
 }
 //=====================================
 String getPage(){
