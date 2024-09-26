@@ -10,8 +10,8 @@
 #include "creatBut.h"
 #include "sdReader.h"
 
-const char *ssid="TimsServer";//имя wifi
-const char *password ="12345678";//passwd
+const char *ssid="TimsServer";//имя 
+const char *password ="12345678";//пароль
 
 ESP8266WebServer server(80);
 
@@ -40,6 +40,7 @@ void setup (){
   server.on("/bd", HTTP_POST, handleDir);
   server.on("/h", HTTP_POST, toHome);
   server.on("/f", HTTP_POST, openFile);
+  server.on("/c", HTTP_POST, clear);
   server.begin();
   Serial.println("Access Point started");
 
@@ -82,7 +83,6 @@ String takePostText(){
   if (data == "") {
     Serial.println("No data received.");
   }
-
   StaticJsonDocument<100> doc;
   DeserializationError error = deserializeJson(doc, data);
   if (error) {
@@ -90,17 +90,19 @@ String takePostText(){
     return "Не получилось парсить";
   }
   String dataFile = doc["data"];
-  Serial.println(dataFile);
+  Serial.println(dataFile + " от функции takePostText");
   if(openedFile != ""){
     if (SD.exists(myDir + openedFile)){
-      File file = SD.open(myDir + openedFile);
+      SD.remove(myDir + openedFile);
+      File file = SD.open(myDir + openedFile, FILE_WRITE);
       file.print(dataFile);
       file.close();
+      Serial.println(sdReader(myDir, openedFile));
       return "Текст записан в файл " + openedFile;
     }
-    return "Вы не открыли ни одного файла. Записать текст некуда :'(";
+    return "запрос получен: " + dataFile + ", но запись не удалась...";
   }
-  return "запрос получен: " + dataFile + ", но запись не удалась...";
+  return "Вы не открыли ни одного файла. Записать текст некуда :'(";
 }
 
 //===== нажатие на создание файла =====
@@ -186,7 +188,44 @@ String takePostDir(){
 void toHome(){
   server.send(200, "text/plain", "Вы вернулись домой");
   myDir = "/";
+  openedFile = "";
   Serial.println("вы вернулись домой");
+}
+//=====================================
+void clear(){
+  server.send(200, "text/plain", deleteFileOrEmptyDir());
+}
+//____________________________________
+String deleteFileOrEmptyDir() {
+  String data = server.arg("plain");
+  if (data == "") {
+    return "Пустой запрос";
+    Serial.println("Нет данных.");
+  }
+  StaticJsonDocument<100> doc;
+  DeserializationError error = deserializeJson(doc, data);
+  if (error) {
+    Serial.println("не удалось парсить");
+    return "failed to parse JSON";
+  }
+  String dataFile = doc["data"];
+  String path = myDir + dataFile;
+    File file = SD.open(path);
+    if (!file) return "Папки или файла " + dataFile + " нет в этой директории";
+    if (file.isDirectory()) {
+        File dirCheck = file.openNextFile();
+        if (!dirCheck) {
+            SD.rmdir(path);
+            return "Удалена пустая папка";
+        } else {
+            dirCheck.close();
+            return "Директория не пустая";
+        }
+    } else {
+        SD.remove(path);
+        return "Файл удален";
+    }
+    file.close();
 }
 //=====================================
 void openFile(){
@@ -208,16 +247,16 @@ String openFileFunc(){
   String dataFile = doc["fileName"];
   if (dataFile == "") return "Эта кнопка пустая. Хз, как так...";
   if(!SD.exists(myDir + dataFile)) return "Этого файла нет, хз как так";
-  
   File file = SD.open(myDir + dataFile);
   if (file.isDirectory()){
     myDir += dataFile + "/";
+    openedFile = "";
     Serial.println ("Вы перешли в директорию " + dataFile);
     return "";
   }
-  openedFile = dataFile;
   String dataInFile(sdReader(myDir, dataFile));
-  Serial.println(dataInFile);
+  Serial.println(dataInFile + " от функции openFileFunc");
+  openedFile = dataFile;
   return dataInFile;
 }
 //=====================================
@@ -238,6 +277,7 @@ String getPage(){
   "<hr><h3>Открытый файл: " +
   myDir + openedFile + "</h3>"
   "<textarea rows='10' cols='50' id='inputArea'></textarea>"
+  "<button class='btn-creatC' id='clear'>Удалить файл</button>"
   "<button class='btn-submit' id='submitButton'>Сохранить</button>"
   "<button class='btn-creatF' id='creatFile'>Создать файл</button>"
   "<button class='btn-creatD' id='creatDir'>Создать папку</button>"
