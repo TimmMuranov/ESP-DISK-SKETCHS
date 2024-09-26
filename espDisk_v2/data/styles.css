@@ -9,7 +9,7 @@
     }
 .btn-submit {
     margin: auto;
-    width: 50%;
+    width: 45%;
     background-color: #4CAF50;
     padding: 10px;
     cursor: pointer;
@@ -19,18 +19,14 @@
     background-color: #43a047;
     }
 .btn-creatF {
-    margin: auto;
-    width: 25%;
+    width: 20%;
     background-color: Gray;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
 }
 .btn-creatD {
-    margin: auto;
-    width: 25%;
+    width: 20%;
     background-color: Blue;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
+}
+.btn-creatC {
+    width: 15%;
+    background-color: Red;
 }
